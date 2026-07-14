@@ -445,10 +445,10 @@ _create_controls(HWND dlg, encui_page *page)
             {
                 DWORD style = WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON |
                               (has_options ? 0 : WS_GROUP);
-                HWND ctl = CreateWindowW(L"BUTTON", L"", style, cx, cy,
-                                         rect.right - rect.left, 64, dlg,
-                                         (HMENU)(UINT_PTR)CPX_CTLID(i),
-                                         GetModuleHandleW(NULL), NULL);
+                HWND  ctl = CreateWindowW(L"BUTTON", L"", style, cx, cy,
+                                          rect.right - rect.left, 64, dlg,
+                                          (HMENU)(UINT_PTR)CPX_CTLID(i),
+                                          GetModuleHandleW(NULL), NULL);
 
                 has_options = true;
                 SendMessageW(ctl, WM_SETFONT, (WPARAM)_font, TRUE);
