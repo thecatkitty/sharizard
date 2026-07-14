@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "direct.h"
 
 static int

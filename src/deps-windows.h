@@ -1,35 +1,11 @@
-#ifndef _ARCH_WINDOWS_H_
-#define _ARCH_WINDOWS_H_
+#ifndef DEPS_WINDOWS_H
+#define DEPS_WINDOWS_H
 
 #define UNICODE
 #include <windows.h>
 
-#include <base.h>
-#include <gfx.h>
-
 extern HWND
 windows_get_hwnd(void);
-
-extern HDC
-windows_get_dc(void);
-
-extern HFONT
-windows_find_font(int max_width, int max_height);
-
-extern bool
-windows_set_font(HFONT font);
-
-extern bool
-windows_set_scale(float scale);
-
-extern void
-windows_set_box(int width, int height);
-
-extern void
-windows_get_origin(POINT *origin);
-
-extern COLORREF
-windows_get_bg(void);
 
 extern HBITMAP
 windows_create_dib(HDC dc, gfx_bitmap *bm);
@@ -54,7 +30,7 @@ windows_is_less_than(uint16_t ver)
 }
 
 inline static FARPROC
-windows_get_proc(const char* module, const char* name)
+windows_get_proc(const char *module, const char *name)
 {
     HMODULE hmodule = GetModuleHandleA(module);
     return hmodule ? GetProcAddress(hmodule, name) : NULL;
@@ -73,4 +49,4 @@ windows_get_proc(const char* module, const char* name)
 #define windows_is_less_than_98()   winver_and_windows_is_less_than(0x040A)
 #define windows_is_less_than_2000() winver_and_windows_is_less_than(0x0500)
 
-#endif // _ARCH_WINDOWS_H_
+#endif // DEPS_WINDOWS_H

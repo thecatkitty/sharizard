@@ -1,9 +1,9 @@
 #ifndef _ENCUI_H_
 #define _ENCUI_H_
 
-#include <gfx.h>
-
-#include "../enc_impl.h"
+#include <inttypes.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 enum encui_result
 {

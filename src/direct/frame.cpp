@@ -6,7 +6,7 @@
 
 extern "C"
 {
-#include "../../../resource.h"
+#include "../resource.h"
 #include "direct.h"
 }
 

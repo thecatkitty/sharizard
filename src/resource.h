@@ -1,10 +1,21 @@
-#define IDD_PROMPT 1
-#define IDD_VACAT  2
+#ifndef RESOURCE_H
+#define RESOURCE_H
 
-#define IDC_ALERT   100
-#define IDC_BANG    101
-#define IDC_EDITBOX 150
-#define IDC_CHECK   160
-#define IDC_TEXT    200
+#define SHIZ_WINRES(x) (0x7a53 + (x)) // little-endian 'Sz'
 
-#define IDB_HEADER 1
+#define IDD_PROMPT SHIZ_WINRES(1)
+#define IDD_VACAT  SHIZ_WINRES(2)
+
+#define IDC_ALERT   SHIZ_WINRES(1)
+#define IDC_BANG    SHIZ_WINRES(2)
+#define IDC_EDITBOX SHIZ_WINRES(3)
+#define IDC_CHECK   SHIZ_WINRES(4)
+#define IDC_TEXT    SHIZ_WINRES(5)
+
+#define IDB_HEADER SHIZ_WINRES(1)
+
+#define IDS_CANCEL SHIZ_WINRES(1)
+#define IDS_BACK   SHIZ_WINRES(2)
+#define IDS_NEXT   SHIZ_WINRES(3)
+
+#endif // RESOURCE_H

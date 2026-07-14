@@ -6,17 +6,18 @@
 #include <commctrl.h>
 // clang-format on
 
+#include <errno.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <arch/windows.h>
-#include <fmt/utf8.h>
-#include <pal.h>
+#include "deps-lavender.h"
+#include "deps-windows.h"
+#include "encui.h"
 
-#include "../../resource.h"
-#include "../ui/encui.h"
 #include "resource.h"
+
+#define lengthof(x) (sizeof(x) / sizeof((x)[0]))
 
 #if defined(_MSC_VER) && (_MSC_VER < 1600)
 typedef struct

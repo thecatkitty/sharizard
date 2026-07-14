@@ -1,10 +1,8 @@
+#include <errno.h>
+#include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <fmt/utf8.h>
-#include <gfx.h>
-#include <pal.h>
-
-#include "../../../resource.h"
 #include "direct.h"
 
 enum
