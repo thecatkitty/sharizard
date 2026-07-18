@@ -2,7 +2,7 @@
 
 #include "widgets.hpp"
 
-using namespace ui;
+using namespace shiz;
 
 void
 panel::draw()
@@ -63,4 +63,4 @@ panel::get_child_by_type(int type, size_t nth)
         });
 }
 
-encui_field ui::null_field{};
+shiz_field shiz::null_field{};

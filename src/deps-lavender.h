@@ -5,12 +5,12 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#define CONFIG_ENCUI_CHECKBOX_MARK_CHARACTER "x"
-#define CONFIG_ENCUI_RADIO_FIELD_CHARACTER   "○"
+#define CONFIG_SHIZ_CHECKBOX_MARK_CHARACTER "x"
+#define CONFIG_SHIZ_RADIO_FIELD_CHARACTER   "○"
 #if defined(HAVE_GFX_CHARSET)
-#define CONFIG_ENCUI_RADIO_MARK_CHARACTER "•"
+#define CONFIG_SHIZ_RADIO_MARK_CHARACTER "•"
 #else
-#define CONFIG_ENCUI_RADIO_MARK_CHARACTER "x"
+#define CONFIG_SHIZ_RADIO_MARK_CHARACTER "x"
 #endif
 
 typedef struct

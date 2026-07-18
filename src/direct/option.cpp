@@ -4,9 +4,9 @@
 
 #include "widgets.hpp"
 
-using namespace ui;
+using namespace shiz;
 
-option::option(encui_field &field) : widget{field}
+option::option(shiz_field &field) : widget{field}
 {
     gfx_dimensions glyph;
     gfx_get_glyph_dimensions(&glyph);
@@ -19,14 +19,14 @@ void
 option::draw()
 {
     char buffer[GFX_COLUMNS * 4] = "   ";
-    encui_direct_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
+    shiz_direct_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
 
     auto page = get_page();
     if (nullptr != page)
     {
         auto pos =
-            std::count_if(page->fields, &field_, [](const encui_field &field) {
-                return ENCUIFT_OPTION == field.type;
+            std::count_if(page->fields, &field_, [](const shiz_field &field) {
+                return SHIZFT_OPTION == field.type;
             });
 
         if (7 > pos)
@@ -35,9 +35,9 @@ option::draw()
         }
     }
 
-    encui_direct_print(rect_.top, buffer);
+    shiz_direct_print(rect_.top, buffer);
 
-    mark(ENCUIFF_CHECKED & field_.flags);
+    mark(SHIZFF_CHECKED & field_.flags);
 }
 
 int
@@ -50,7 +50,7 @@ option::click(int x, int y)
 
     for (auto &widget : *reinterpret_cast<panel *>(parent_))
     {
-        if (ENCUIFT_OPTION != widget->get_model().type)
+        if (SHIZFT_OPTION != widget->get_model().type)
         {
             continue;
         }
@@ -75,14 +75,14 @@ option::mark(bool checked)
     gfx_fill_rectangle(&box, GFX_COLOR_WHITE);
 
     char buff[4];
-    strcpy(buff, CONFIG_ENCUI_RADIO_FIELD_CHARACTER);
+    strcpy(buff, CONFIG_SHIZ_RADIO_FIELD_CHARACTER);
 #if defined(CONFIG_HAVE_GFX_CHARSET)
     utf8_encode(buff, buff, pal_wctob);
 #endif
     gfx_draw_text(buff, pos.left + 1, pos.top);
     if (checked)
     {
-        strcpy(buff, CONFIG_ENCUI_RADIO_MARK_CHARACTER);
+        strcpy(buff, CONFIG_SHIZ_RADIO_MARK_CHARACTER);
 #if defined(CONFIG_HAVE_GFX_CHARSET)
         utf8_encode(buff, buff, pal_wctob);
 #endif
@@ -96,10 +96,10 @@ option::set(bool checked)
     mark(checked);
     if (checked)
     {
-        field_.flags |= ENCUIFF_CHECKED;
+        field_.flags |= SHIZFF_CHECKED;
     }
     else
     {
-        field_.flags &= ~ENCUIFF_CHECKED;
+        field_.flags &= ~SHIZFF_CHECKED;
     }
 }

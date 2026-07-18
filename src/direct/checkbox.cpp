@@ -2,9 +2,9 @@
 
 #include "widgets.hpp"
 
-using namespace ui;
+using namespace shiz;
 
-checkbox::checkbox(encui_field &field) : widget{field}, box_{}
+checkbox::checkbox(shiz_field &field) : widget{field}, box_{}
 {
     gfx_dimensions glyph;
     gfx_get_glyph_dimensions(&glyph);
@@ -21,22 +21,22 @@ void
 checkbox::draw()
 {
     char buffer[GFX_COLUMNS * 4] = "   ";
-    encui_direct_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
+    shiz_direct_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
     std::strcat(buffer, " [F8]");
-    encui_direct_print(rect_.top, buffer);
+    shiz_direct_print(rect_.top, buffer);
 
-    mark(ENCUIFF_CHECKED & field_.flags);
+    mark(SHIZFF_CHECKED & field_.flags);
 }
 
 int
 checkbox::click(int x, int y)
 {
-    field_.flags ^= ENCUIFF_CHECKED;
+    field_.flags ^= SHIZFF_CHECKED;
 
 #if defined(CONFIG_HAVE_GFX_XOR_BLENDING)
     mark(true);
 #else
-    mark(ENCUIFF_CHECKED & field_.flags);
+    mark(SHIZFF_CHECKED & field_.flags);
 #endif
 
     return 0;
@@ -60,7 +60,7 @@ checkbox::mark(bool checked)
 
     if (checked)
     {
-        gfx_draw_text(CONFIG_ENCUI_CHECKBOX_MARK_CHARACTER, pos.left + 1,
+        gfx_draw_text(CONFIG_SHIZ_CHECKBOX_MARK_CHARACTER, pos.left + 1,
                       pos.top);
     }
 }

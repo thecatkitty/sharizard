@@ -1,8 +1,8 @@
 #include "widgets.hpp"
 
-using namespace ui;
+using namespace shiz;
 
-bitmap::bitmap(encui_field &field) : widget{field}
+bitmap::bitmap(shiz_field &field) : widget{field}
 {
     gfx_dimensions glyph;
     gfx_get_glyph_dimensions(&glyph);
@@ -22,11 +22,11 @@ bitmap::draw()
     auto  pos = get_position();
 
     auto x = pos.left;
-    if (ENCUIFF_CENTER == (ENCUIFF_ALIGN & field_.flags))
+    if (SHIZFF_CENTER == (SHIZFF_ALIGN & field_.flags))
     {
         x += (TEXT_WIDTH - rect_.width) / 2;
     }
-    else if (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field_.flags))
+    else if (SHIZFF_RIGHT == (SHIZFF_ALIGN & field_.flags))
     {
         x += TEXT_WIDTH - rect_.width;
     }

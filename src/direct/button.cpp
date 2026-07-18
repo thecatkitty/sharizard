@@ -2,9 +2,9 @@
 
 #include "widgets.hpp"
 
-using namespace ui;
+using namespace shiz;
 
-button::button(encui_field &field) : widget{field}
+button::button(shiz_field &field) : widget{field}
 {
     rect_.width = 11;
     rect_.height = 3;
@@ -22,7 +22,7 @@ button::draw()
                  (rect_.width - 2) * glyph.width, glyph.height * 3 / 2};
 
     char buff[GFX_COLUMNS / 2];
-    encui_direct_load_string(&field_, buff, sizeof(buff));
+    shiz_direct_load_string(&field_, buff, sizeof(buff));
 #if defined(CONFIG_HAVE_GFX_CHARSET)
     utf8_encode(buff, buff, pal_wctob);
 #endif

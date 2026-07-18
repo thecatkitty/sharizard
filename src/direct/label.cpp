@@ -2,18 +2,18 @@
 
 #include "widgets.hpp"
 
-using namespace ui;
+using namespace shiz;
 
 int
 label::click(int x, int y)
 {
-    if (0 == (ENCUIFF_FOOTER & field_.flags))
+    if (0 == (SHIZFF_FOOTER & field_.flags))
     {
         return 0;
     }
 
     auto &page = *get_page();
-    page.proc(ENCUIM_NOTIFY,
+    page.proc(SHIZM_NOTIFY,
               reinterpret_cast<void *>(0x100 + (&field_ - page.fields)),
               page.data);
     return 0;
@@ -32,7 +32,7 @@ label::draw()
     gfx_fill_rectangle(&rect, GFX_COLOR_WHITE);
 
     char buffer[GFX_COLUMNS * 4];
-    if (ENCUIFF_DYNAMIC & field_.flags)
+    if (SHIZFF_DYNAMIC & field_.flags)
     {
         std::strncpy(buffer, reinterpret_cast<const char *>(field_.data),
                      sizeof(buffer));
@@ -42,7 +42,7 @@ label::draw()
         pal_load_string(field_.data, buffer, sizeof(buffer));
     }
 
-    if (ENCUIFF_FOOTER & field_.flags)
+    if (SHIZFF_FOOTER & field_.flags)
     {
         auto src = buffer;
         auto dst = buffer;
@@ -72,5 +72,5 @@ label::draw()
     }
 
     rect_.width = GFX_COLUMNS - 2;
-    rect_.height = encui_direct_print(rect_.top, buffer) + 1;
+    rect_.height = shiz_direct_print(rect_.top, buffer) + 1;
 }

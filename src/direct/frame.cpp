@@ -17,21 +17,21 @@ static gfx_dimensions _glyph = {0, 0};
 static gfx_rect       _screen = {0, 0, 0, 0};
 
 // Buttons
-static encui_field _cancel_field{0, ENCUIFF_STATIC, IDS_CANCEL};
-static encui_field _back_field{0, ENCUIFF_STATIC, IDS_BACK};
-static encui_field _next_field{0, ENCUIFF_STATIC, IDS_NEXT};
-static ui::button  _cancel{_cancel_field};
-static ui::button  _back{_back_field};
-static ui::button  _next{_next_field};
-static bool        _mouse_down;
+static shiz_field   _cancel_field{0, SHIZFF_STATIC, IDS_CANCEL};
+static shiz_field   _back_field{0, SHIZFF_STATIC, IDS_BACK};
+static shiz_field   _next_field{0, SHIZFF_STATIC, IDS_NEXT};
+static shiz::button _cancel{_cancel_field};
+static shiz::button _back{_back_field};
+static shiz::button _next{_next_field};
+static bool         _mouse_down;
 
 // Page state
-static encui_page *_page;
+static shiz_page *_page;
 
-std::unique_ptr<ui::panel> panel_{};
+std::unique_ptr<shiz::panel> panel_{};
 
 void
-encui_direct_init_frame(void)
+shiz_direct_init_frame(void)
 {
     gfx_dimensions dim;
     gfx_get_screen_dimensions(&dim);
@@ -78,7 +78,7 @@ _draw_background(void)
 }
 
 static bool
-_is_pressed(const ui::widget &widget, uint16_t msx, uint16_t msy)
+_is_pressed(const shiz::widget &widget, uint16_t msx, uint16_t msy)
 {
     gfx_rect pos = widget.get_position();
     if (0 > pos.left)
@@ -100,9 +100,9 @@ _is_pressed(const ui::widget &widget, uint16_t msx, uint16_t msy)
 }
 
 static void
-_create_controls(encui_page *page)
+_create_controls(shiz_page *page)
 {
-    panel_ = std::make_unique<ui::panel>(*page);
+    panel_ = std::make_unique<shiz::panel>(*page);
 
     uint16_t x, y;
     _mouse_down = PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y);
@@ -112,17 +112,17 @@ _create_controls(encui_page *page)
 
     for (int i = 0; i < page->length; i++)
     {
-        encui_field *field = &page->fields[i];
+        shiz_field *field = &page->fields[i];
 
-        if (ENCUIFT_SEPARATOR == field->type)
+        if (SHIZFT_SEPARATOR == field->type)
         {
             cy += field->data;
         }
 
-        if (ENCUIFT_LABEL == field->type)
+        if (SHIZFT_LABEL == field->type)
         {
-            auto &label = panel_->create<ui::label>(*field);
-            if (ENCUIFF_FOOTER & field->flags)
+            auto &label = panel_->create<shiz::label>(*field);
+            if (SHIZFF_FOOTER & field->flags)
             {
                 label.move(1, GFX_LINES - 5);
                 label.draw();
@@ -131,50 +131,50 @@ _create_controls(encui_page *page)
             {
                 label.move(1, cy);
                 label.draw();
-                cy = ui::get_bottom(label.get_area());
+                cy = shiz::get_bottom(label.get_area());
             }
         }
 
-        if (ENCUIFT_TEXTBOX == field->type)
+        if (SHIZFT_TEXTBOX == field->type)
         {
-            auto &textbox = panel_->create<ui::textbox>(*field);
+            auto &textbox = panel_->create<shiz::textbox>(*field);
             textbox.move(1, cy);
             textbox.draw();
-            cy = ui::get_bottom(textbox.get_area());
+            cy = shiz::get_bottom(textbox.get_area());
         }
 
-        if (!has_checkbox && (ENCUIFT_CHECKBOX == field->type))
+        if (!has_checkbox && (SHIZFT_CHECKBOX == field->type))
         {
             has_checkbox = true;
 
-            auto &checkbox = panel_->create<ui::checkbox>(*field);
+            auto &checkbox = panel_->create<shiz::checkbox>(*field);
             checkbox.move(1, GFX_LINES - 5);
             checkbox.draw();
         }
 
-        if (ENCUIFT_OPTION == field->type)
+        if (SHIZFT_OPTION == field->type)
         {
-            auto &option = panel_->create<ui::option>(*field);
+            auto &option = panel_->create<shiz::option>(*field);
             option.move(1, cy);
             option.draw();
-            cy = ui::get_bottom(option.get_area());
+            cy = shiz::get_bottom(option.get_area());
         }
 
-        if (ENCUIFT_BITMAP == field->type)
+        if (SHIZFT_BITMAP == field->type)
         {
-            auto &bitmap = panel_->create<ui::bitmap>(*field);
+            auto &bitmap = panel_->create<shiz::bitmap>(*field);
             bitmap.move(1, cy);
             bitmap.draw();
-            cy = ui::get_bottom(bitmap.get_area());
+            cy = shiz::get_bottom(bitmap.get_area());
         }
     }
 }
 
 void
-encui_direct_enter_page(encui_page *pages, int id)
+shiz_direct_enter_page(shiz_page *pages, int id)
 {
     _page = pages + id;
-    _page->proc(ENCUIM_INIT, NULL, _page->data);
+    _page->proc(SHIZM_INIT, NULL, _page->data);
 
     char buffer[GFX_COLUMNS * 2];
     _draw_background();
@@ -195,117 +195,117 @@ encui_direct_enter_page(encui_page *pages, int id)
     _next.draw();
     _cancel.draw();
 
-    _page->proc(ENCUIM_ENTERED, NULL, _page->data);
+    _page->proc(SHIZM_ENTERED, NULL, _page->data);
     pal_enable_mouse();
 }
 
 int
-encui_direct_click(uint16_t x, uint16_t y)
+shiz_direct_click(uint16_t x, uint16_t y)
 {
     if (_mouse_down)
     {
-        return ENCUI_INCOMPLETE;
+        return SHIZ_INCOMPLETE;
     }
 
     _mouse_down = true;
     if (_is_pressed(_back, x, y))
     {
-        return encui_direct_key(VK_PRIOR);
+        return shiz_direct_key(VK_PRIOR);
     }
 
     if (_is_pressed(_next, x, y))
     {
-        return encui_direct_key(VK_RETURN);
+        return shiz_direct_key(VK_RETURN);
     }
 
     if (_is_pressed(_cancel, x, y))
     {
-        return encui_direct_key(VK_ESCAPE);
+        return shiz_direct_key(VK_ESCAPE);
     }
 
     auto pos = panel_->get_position();
     panel_->click(x - pos.left, y - pos.top);
-    return ENCUI_INCOMPLETE;
+    return SHIZ_INCOMPLETE;
 }
 
 int
-encui_direct_key(uint16_t scancode)
+shiz_direct_key(uint16_t scancode)
 {
     _mouse_down = false;
     if (0 == scancode)
     {
-        return ENCUI_INCOMPLETE;
+        return SHIZ_INCOMPLETE;
     }
 
     if (VK_ESCAPE == scancode)
     {
-        return ENCUI_CANCEL;
+        return SHIZ_CANCEL;
     }
 
-    encui_textbox_data *textbox = encui_find_textbox(_page);
+    shiz_textbox_data *textbox = shiz_find_textbox(_page);
 
     if (VK_RETURN == scancode)
     {
         if (NULL == textbox)
         {
-            return ENCUI_OK;
+            return SHIZ_OK;
         }
 
-        if (0 >= encui_check_page(_page, textbox->buffer))
+        if (0 >= shiz_check_page(_page, textbox->buffer))
         {
-            return ENCUI_OK;
+            return SHIZ_OK;
         }
 
         pal_disable_mouse();
-        encui_direct_animate(false);
-        return ENCUI_INCOMPLETE;
+        shiz_direct_animate(false);
+        return SHIZ_INCOMPLETE;
     }
 
-    int id = encui_get_page();
+    int id = shiz_get_page();
     if ((VK_PRIOR == scancode) && (0 < id))
     {
         pal_disable_mouse();
-        encui_set_page(id - 1);
-        return ENCUI_INCOMPLETE;
+        shiz_set_page(id - 1);
+        return SHIZ_INCOMPLETE;
     }
 
     if ((VK_F1 <= scancode) && (VK_F7 >= scancode))
     {
-        auto option = ui::get_child<ui::option>(*panel_, scancode - VK_F1);
+        auto option = shiz::get_child<shiz::option>(*panel_, scancode - VK_F1);
         if (option)
         {
             option->click(-1, -1);
         }
 
-        return ENCUI_INCOMPLETE;
+        return SHIZ_INCOMPLETE;
     }
 
     if (VK_F8 == scancode)
     {
-        auto checkbox = ui::get_child<ui::checkbox>(*panel_);
+        auto checkbox = shiz::get_child<shiz::checkbox>(*panel_);
         if (checkbox)
         {
             checkbox->click(-1, -1);
         }
 
-        return ENCUI_INCOMPLETE;
+        return SHIZ_INCOMPLETE;
     }
 
     panel_->key(scancode);
-    return ENCUI_INCOMPLETE;
+    return SHIZ_INCOMPLETE;
 }
 
 bool
-encui_direct_animate(bool valid)
+shiz_direct_animate(bool valid)
 {
-    auto textbox = ui::get_child<ui::textbox>(*panel_);
+    auto textbox = shiz::get_child<shiz::textbox>(*panel_);
     return textbox ? textbox->animate(valid) : true;
 }
 
 void
-encui_direct_set_error(char *message)
+shiz_direct_set_error(char *message)
 {
-    auto textbox = ui::get_child<ui::textbox>(*panel_);
+    auto textbox = shiz::get_child<shiz::textbox>(*panel_);
     if (textbox)
     {
         textbox->alert(message);
@@ -313,7 +313,7 @@ encui_direct_set_error(char *message)
 }
 
 bool
-encui_refresh_field(encui_page *page, int id)
+shiz_refresh_field(shiz_page *page, int id)
 {
     if (_page != page)
     {

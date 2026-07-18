@@ -3,7 +3,7 @@
 
 #include "widgets.hpp"
 
-using namespace ui;
+using namespace shiz;
 
 namespace
 {
@@ -35,11 +35,11 @@ enum
     STATE_INVALID3,
 };
 
-textbox::textbox(encui_field &field)
+textbox::textbox(shiz_field &field)
     : widget{field}, blink_start_{}, caret_period_{}, caret_counter_{},
       caret_visible_{true}, position_{}, state_{STATE_PROMPT}
 {
-    auto &textbox = *reinterpret_cast<encui_textbox_data *>(field.data);
+    auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field.data);
     if (0 == textbox.length)
     {
         textbox.buffer[0] = 0;
@@ -61,11 +61,11 @@ void
 textbox::draw()
 {
     auto &page = *get_page();
-    auto &textbox = *reinterpret_cast<encui_textbox_data *>(field_.data);
+    auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field_.data);
 
     auto pos = get_position();
     auto field = get_field(pos);
-    gfx_draw_rectangle(&field, (0 < encui_check_page(&page, textbox.buffer))
+    gfx_draw_rectangle(&field, (0 < shiz_check_page(&page, textbox.buffer))
                                    ? GFX_COLOR_GRAY
                                    : GFX_COLOR_BLACK);
     gfx_fill_rectangle(&field, GFX_COLOR_WHITE);
@@ -146,7 +146,7 @@ textbox::alert(char *message)
     gfx_fill_rectangle(&bg, GFX_COLOR_WHITE);
 
     gfx_rect pos = get_position();
-    encui_direct_print(pos.top + 3, message);
+    shiz_direct_print(pos.top + 3, message);
 }
 
 int
@@ -157,7 +157,7 @@ textbox::click(int x, int y)
         return 0;
     }
 
-    auto &textbox = *reinterpret_cast<encui_textbox_data *>(field_.data);
+    auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field_.data);
 
     int cursor = std::max(0, std::min(int(textbox.length), x - 1));
     if (position_ != cursor)
@@ -174,7 +174,7 @@ textbox::click(int x, int y)
 int
 textbox::key(int scancode)
 {
-    auto &textbox = *reinterpret_cast<encui_textbox_data *>(field_.data);
+    auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field_.data);
 
     pal_disable_mouse();
 

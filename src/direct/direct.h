@@ -2,32 +2,32 @@
 #define _UI_DIRECT_H_
 
 #include "../deps-lavender.h"
-#include "../encui.h"
+#include <sharizard.h>
 
 #define TEXT_WIDTH (GFX_COLUMNS - 2)
 
 void
-encui_direct_load_string(encui_field *field, char *buff, size_t length);
+shiz_direct_load_string(shiz_field *field, char *buff, size_t length);
 
 int
-encui_direct_print(int top, char *text);
+shiz_direct_print(int top, char *text);
 
 void
-encui_direct_init_frame(void);
+shiz_direct_init_frame(void);
 
 void
-encui_direct_enter_page(encui_page *pages, int id);
+shiz_direct_enter_page(shiz_page *pages, int id);
 
 int
-encui_direct_click(uint16_t x, uint16_t y);
+shiz_direct_click(uint16_t x, uint16_t y);
 
 int
-encui_direct_key(uint16_t scancode);
+shiz_direct_key(uint16_t scancode);
 
 bool
-encui_direct_animate(bool valid);
+shiz_direct_animate(bool valid);
 
 void
-encui_direct_set_error(char *message);
+shiz_direct_set_error(char *message);
 
 #endif

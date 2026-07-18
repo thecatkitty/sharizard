@@ -99,9 +99,9 @@ _wrap(char *dst, const char *src, size_t width, char delimiter)
 }
 
 void
-encui_direct_load_string(encui_field *field, char *buff, size_t length)
+shiz_direct_load_string(shiz_field *field, char *buff, size_t length)
 {
-    if (ENCUIFF_DYNAMIC & field->flags)
+    if (SHIZFF_DYNAMIC & field->flags)
     {
         strncpy(buff, (const char *)field->data, length);
     }
@@ -112,7 +112,7 @@ encui_direct_load_string(encui_field *field, char *buff, size_t length)
 }
 
 int
-encui_direct_print(int top, char *text)
+shiz_direct_print(int top, char *text)
 {
 #if defined(CONFIG_HAVE_GFX_CHARSET)
     utf8_encode(text, text, pal_wctob);
