@@ -1,4 +1,4 @@
-target_sources(enc PRIVATE direct.c)
+target_sources(enc PRIVATE canvas.c)
 target_sources(enc PRIVATE frame.cpp)
 target_sources(enc PRIVATE text.c)
 

@@ -1,6 +1,6 @@
 #include "widgets.hpp"
 
-using namespace shiz;
+using namespace shiz::canvas;
 
 bitmap::bitmap(shiz_field &field) : widget{field}
 {

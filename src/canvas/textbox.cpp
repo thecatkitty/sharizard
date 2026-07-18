@@ -3,7 +3,7 @@
 
 #include "widgets.hpp"
 
-using namespace shiz;
+using namespace shiz::canvas;
 
 namespace
 {
@@ -146,7 +146,7 @@ textbox::alert(char *message)
     gfx_fill_rectangle(&bg, GFX_COLOR_WHITE);
 
     gfx_rect pos = get_position();
-    shiz_direct_print(pos.top + 3, message);
+    shiz_canvas_print(pos.top + 3, message);
 }
 
 int

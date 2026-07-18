@@ -2,7 +2,7 @@
 
 #include "widgets.hpp"
 
-using namespace shiz;
+using namespace shiz::canvas;
 
 int
 label::click(int x, int y)
@@ -72,5 +72,5 @@ label::draw()
     }
 
     rect_.width = GFX_COLUMNS - 2;
-    rect_.height = shiz_direct_print(rect_.top, buffer) + 1;
+    rect_.height = shiz_canvas_print(rect_.top, buffer) + 1;
 }

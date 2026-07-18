@@ -4,7 +4,7 @@
 
 #include "widgets.hpp"
 
-using namespace shiz;
+using namespace shiz::canvas;
 
 option::option(shiz_field &field) : widget{field}
 {
@@ -19,7 +19,7 @@ void
 option::draw()
 {
     char buffer[GFX_COLUMNS * 4] = "   ";
-    shiz_direct_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
+    shiz_canvas_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
 
     auto page = get_page();
     if (nullptr != page)
@@ -35,7 +35,7 @@ option::draw()
         }
     }
 
-    shiz_direct_print(rect_.top, buffer);
+    shiz_canvas_print(rect_.top, buffer);
 
     mark(SHIZFF_CHECKED & field_.flags);
 }

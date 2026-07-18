@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "direct.h"
+#include "canvas.h"
 
 enum
 {
@@ -27,7 +27,7 @@ shiz_enter(shiz_page *pages, int count)
         return false;
     }
 
-    shiz_direct_init_frame();
+    shiz_canvas_init_frame();
     _pages = pages;
     _id = -1;
     return true;
@@ -58,7 +58,7 @@ shiz_handle(void)
         return 0;
     }
 
-    if (!shiz_direct_animate(true))
+    if (!shiz_canvas_animate(true))
     {
         return SHIZ_INCOMPLETE;
     }
@@ -97,7 +97,7 @@ shiz_handle(void)
         {
             pal_load_string(status, message, sizeof(message));
         }
-        shiz_direct_set_error(message);
+        shiz_canvas_set_error(message);
 
         _state = STATE_PROMPT;
         pal_enable_mouse();
@@ -115,11 +115,11 @@ shiz_handle(void)
     uint16_t x, y;
     if (PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y))
     {
-        status = shiz_direct_click(x, y);
+        status = shiz_canvas_click(x, y);
     }
     else
     {
-        status = shiz_direct_key(pal_get_keystroke());
+        status = shiz_canvas_key(pal_get_keystroke());
     }
 
     if (SHIZ_OK == status)
@@ -164,7 +164,7 @@ shiz_set_page(int id)
     }
 
     _id = id;
-    shiz_direct_enter_page(_pages, id);
+    shiz_canvas_enter_page(_pages, id);
     _state = STATE_PROMPT;
     return true;
 }

@@ -2,7 +2,7 @@
 
 #include "widgets.hpp"
 
-using namespace shiz;
+using namespace shiz::canvas;
 
 void
 panel::draw()
@@ -63,4 +63,4 @@ panel::get_child_by_type(int type, size_t nth)
         });
 }
 
-shiz_field shiz::null_field{};
+shiz_field shiz::canvas::null_field{};

@@ -5,10 +5,12 @@
 
 extern "C"
 {
-#include "direct.h"
+#include "canvas.h"
 }
 
 namespace shiz
+{
+namespace canvas
 {
 
 extern shiz_field null_field;
@@ -271,4 +273,5 @@ get_child(panel &panel, size_t nth = 0)
     return (panel.end() == it) ? nullptr : reinterpret_cast<T *>(it->get());
 }
 
+} // namespace canvas
 } // namespace shiz

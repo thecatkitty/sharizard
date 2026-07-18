@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "direct.h"
+#include "canvas.h"
 
 static int
 _measure_span(const char *str, size_t span)
@@ -99,7 +99,7 @@ _wrap(char *dst, const char *src, size_t width, char delimiter)
 }
 
 void
-shiz_direct_load_string(shiz_field *field, char *buff, size_t length)
+shiz_canvas_load_string(shiz_field *field, char *buff, size_t length)
 {
     if (SHIZFF_DYNAMIC & field->flags)
     {
@@ -112,7 +112,7 @@ shiz_direct_load_string(shiz_field *field, char *buff, size_t length)
 }
 
 int
-shiz_direct_print(int top, char *text)
+shiz_canvas_print(int top, char *text)
 {
 #if defined(CONFIG_HAVE_GFX_CHARSET)
     utf8_encode(text, text, pal_wctob);

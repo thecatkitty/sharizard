@@ -7,31 +7,33 @@
 extern "C"
 {
 #include "../resource.h"
-#include "direct.h"
+#include "canvas.h"
 }
 
 #include "widgets.hpp"
+
+using namespace shiz;
 
 // Screen metrics
 static gfx_dimensions _glyph = {0, 0};
 static gfx_rect       _screen = {0, 0, 0, 0};
 
 // Buttons
-static shiz_field   _cancel_field{0, SHIZFF_STATIC, IDS_CANCEL};
-static shiz_field   _back_field{0, SHIZFF_STATIC, IDS_BACK};
-static shiz_field   _next_field{0, SHIZFF_STATIC, IDS_NEXT};
-static shiz::button _cancel{_cancel_field};
-static shiz::button _back{_back_field};
-static shiz::button _next{_next_field};
-static bool         _mouse_down;
+static shiz_field     _cancel_field{0, SHIZFF_STATIC, IDS_CANCEL};
+static shiz_field     _back_field{0, SHIZFF_STATIC, IDS_BACK};
+static shiz_field     _next_field{0, SHIZFF_STATIC, IDS_NEXT};
+static canvas::button _cancel{_cancel_field};
+static canvas::button _back{_back_field};
+static canvas::button _next{_next_field};
+static bool           _mouse_down;
 
 // Page state
 static shiz_page *_page;
 
-std::unique_ptr<shiz::panel> panel_{};
+std::unique_ptr<canvas::panel> panel_{};
 
 void
-shiz_direct_init_frame(void)
+shiz_canvas_init_frame(void)
 {
     gfx_dimensions dim;
     gfx_get_screen_dimensions(&dim);
@@ -78,7 +80,7 @@ _draw_background(void)
 }
 
 static bool
-_is_pressed(const shiz::widget &widget, uint16_t msx, uint16_t msy)
+_is_pressed(const canvas::widget &widget, uint16_t msx, uint16_t msy)
 {
     gfx_rect pos = widget.get_position();
     if (0 > pos.left)
@@ -102,7 +104,7 @@ _is_pressed(const shiz::widget &widget, uint16_t msx, uint16_t msy)
 static void
 _create_controls(shiz_page *page)
 {
-    panel_ = std::make_unique<shiz::panel>(*page);
+    panel_ = std::make_unique<canvas::panel>(*page);
 
     uint16_t x, y;
     _mouse_down = PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y);
@@ -121,7 +123,7 @@ _create_controls(shiz_page *page)
 
         if (SHIZFT_LABEL == field->type)
         {
-            auto &label = panel_->create<shiz::label>(*field);
+            auto &label = panel_->create<canvas::label>(*field);
             if (SHIZFF_FOOTER & field->flags)
             {
                 label.move(1, GFX_LINES - 5);
@@ -131,47 +133,47 @@ _create_controls(shiz_page *page)
             {
                 label.move(1, cy);
                 label.draw();
-                cy = shiz::get_bottom(label.get_area());
+                cy = canvas::get_bottom(label.get_area());
             }
         }
 
         if (SHIZFT_TEXTBOX == field->type)
         {
-            auto &textbox = panel_->create<shiz::textbox>(*field);
+            auto &textbox = panel_->create<canvas::textbox>(*field);
             textbox.move(1, cy);
             textbox.draw();
-            cy = shiz::get_bottom(textbox.get_area());
+            cy = canvas::get_bottom(textbox.get_area());
         }
 
         if (!has_checkbox && (SHIZFT_CHECKBOX == field->type))
         {
             has_checkbox = true;
 
-            auto &checkbox = panel_->create<shiz::checkbox>(*field);
+            auto &checkbox = panel_->create<canvas::checkbox>(*field);
             checkbox.move(1, GFX_LINES - 5);
             checkbox.draw();
         }
 
         if (SHIZFT_OPTION == field->type)
         {
-            auto &option = panel_->create<shiz::option>(*field);
+            auto &option = panel_->create<canvas::option>(*field);
             option.move(1, cy);
             option.draw();
-            cy = shiz::get_bottom(option.get_area());
+            cy = canvas::get_bottom(option.get_area());
         }
 
         if (SHIZFT_BITMAP == field->type)
         {
-            auto &bitmap = panel_->create<shiz::bitmap>(*field);
+            auto &bitmap = panel_->create<canvas::bitmap>(*field);
             bitmap.move(1, cy);
             bitmap.draw();
-            cy = shiz::get_bottom(bitmap.get_area());
+            cy = canvas::get_bottom(bitmap.get_area());
         }
     }
 }
 
 void
-shiz_direct_enter_page(shiz_page *pages, int id)
+shiz_canvas_enter_page(shiz_page *pages, int id)
 {
     _page = pages + id;
     _page->proc(SHIZM_INIT, NULL, _page->data);
@@ -200,7 +202,7 @@ shiz_direct_enter_page(shiz_page *pages, int id)
 }
 
 int
-shiz_direct_click(uint16_t x, uint16_t y)
+shiz_canvas_click(uint16_t x, uint16_t y)
 {
     if (_mouse_down)
     {
@@ -210,17 +212,17 @@ shiz_direct_click(uint16_t x, uint16_t y)
     _mouse_down = true;
     if (_is_pressed(_back, x, y))
     {
-        return shiz_direct_key(VK_PRIOR);
+        return shiz_canvas_key(VK_PRIOR);
     }
 
     if (_is_pressed(_next, x, y))
     {
-        return shiz_direct_key(VK_RETURN);
+        return shiz_canvas_key(VK_RETURN);
     }
 
     if (_is_pressed(_cancel, x, y))
     {
-        return shiz_direct_key(VK_ESCAPE);
+        return shiz_canvas_key(VK_ESCAPE);
     }
 
     auto pos = panel_->get_position();
@@ -229,7 +231,7 @@ shiz_direct_click(uint16_t x, uint16_t y)
 }
 
 int
-shiz_direct_key(uint16_t scancode)
+shiz_canvas_key(uint16_t scancode)
 {
     _mouse_down = false;
     if (0 == scancode)
@@ -257,7 +259,7 @@ shiz_direct_key(uint16_t scancode)
         }
 
         pal_disable_mouse();
-        shiz_direct_animate(false);
+        shiz_canvas_animate(false);
         return SHIZ_INCOMPLETE;
     }
 
@@ -271,7 +273,8 @@ shiz_direct_key(uint16_t scancode)
 
     if ((VK_F1 <= scancode) && (VK_F7 >= scancode))
     {
-        auto option = shiz::get_child<shiz::option>(*panel_, scancode - VK_F1);
+        auto option =
+            canvas::get_child<canvas::option>(*panel_, scancode - VK_F1);
         if (option)
         {
             option->click(-1, -1);
@@ -282,7 +285,7 @@ shiz_direct_key(uint16_t scancode)
 
     if (VK_F8 == scancode)
     {
-        auto checkbox = shiz::get_child<shiz::checkbox>(*panel_);
+        auto checkbox = canvas::get_child<canvas::checkbox>(*panel_);
         if (checkbox)
         {
             checkbox->click(-1, -1);
@@ -296,16 +299,16 @@ shiz_direct_key(uint16_t scancode)
 }
 
 bool
-shiz_direct_animate(bool valid)
+shiz_canvas_animate(bool valid)
 {
-    auto textbox = shiz::get_child<shiz::textbox>(*panel_);
+    auto textbox = canvas::get_child<canvas::textbox>(*panel_);
     return textbox ? textbox->animate(valid) : true;
 }
 
 void
-shiz_direct_set_error(char *message)
+shiz_canvas_set_error(char *message)
 {
-    auto textbox = shiz::get_child<shiz::textbox>(*panel_);
+    auto textbox = canvas::get_child<canvas::textbox>(*panel_);
     if (textbox)
     {
         textbox->alert(message);

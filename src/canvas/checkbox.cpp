@@ -2,7 +2,7 @@
 
 #include "widgets.hpp"
 
-using namespace shiz;
+using namespace shiz::canvas;
 
 checkbox::checkbox(shiz_field &field) : widget{field}, box_{}
 {
@@ -21,9 +21,9 @@ void
 checkbox::draw()
 {
     char buffer[GFX_COLUMNS * 4] = "   ";
-    shiz_direct_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
+    shiz_canvas_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
     std::strcat(buffer, " [F8]");
-    shiz_direct_print(rect_.top, buffer);
+    shiz_canvas_print(rect_.top, buffer);
 
     mark(SHIZFF_CHECKED & field_.flags);
 }
