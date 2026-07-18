@@ -125,10 +125,4 @@ palpp_get_counter(void);
 extern uint32_t
 palpp_get_ticks(unsigned ms);
 
-// Get code point from UTF-8 sequence
-// Returns the code point (0 on NUL or error)
-// *length will contain the length of the sequence (0 on error)
-extern uint16_t
-utf8_get_codepoint(const char *sequence, int *length);
-
 #endif // CANVAS_DEPS_LAVENDER_H

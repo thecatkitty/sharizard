@@ -59,10 +59,6 @@ _draw_title(char *title)
 {
     gfx_rect bar = {0, 0, _screen.width, _glyph.height + 1};
     gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
-
-#if defined(CONFIG_HAVE_GFX_CHARSET)
-    utf8_encode(title, title, pal_wctob);
-#endif
     gfx_draw_text(title, 1, 0);
 }
 

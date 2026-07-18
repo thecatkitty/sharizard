@@ -2,47 +2,62 @@
 
 #include "canvas.h"
 
+#define MAX_LINE_SIZE (2 * GFX_COLUMNS)
+
+typedef struct
+{
+    uint8_t upper;
+    int     length;
+} sequence_range;
+
+static const sequence_range SEQUENCE_RANGES[] = {
+    {0x00, 0}, {0xbf, 1 /* Including stray continuation */},
+    {0xdf, 2}, {0xef, 3},
+    {0xf7, 4}, {0xff, 1 /* Wrong preamble */},
+};
+
+static int
+_get_sequence_length(const char *str)
+{
+    const uint8_t         byte = *(const uint8_t *)str;
+    const sequence_range *range = SEQUENCE_RANGES;
+
+    while (byte > range->upper)
+    {
+        range++;
+    }
+
+    return range->length;
+}
+
 static int
 _measure_span(const char *str, size_t span)
 {
-#if !defined(CONFIG_HAVE_GFX_CHARSET)
     const char *end = str + span;
     int         length;
 
     for (length = 0; str < end; length++)
     {
-        int seq;
-        utf8_get_codepoint(str, &seq);
-        str += seq;
+        str += _get_sequence_length(str);
     }
 
     return length;
-#else
-    return span;
-#endif
 }
 
 static int
 _copy_text(char *dst, const char *src, size_t length)
 {
-#if !defined(CONFIG_HAVE_GFX_CHARSET)
     int size = 0;
 
     for (int i = 0; i < length; i++)
     {
-        int seq;
-        utf8_get_codepoint(src + size, &seq);
+        int seq = _get_sequence_length(src + size);
         memcpy(dst + size, src + size, seq);
         size += seq;
     }
 
     dst[size] = 0;
     return size;
-#else
-    memcpy(dst, src, length);
-    dst[length] = 0;
-    return length;
-#endif
 }
 
 static int
@@ -114,16 +129,8 @@ shiz_canvas_load_string(shiz_field *field, char *buff, size_t length)
 int
 shiz_canvas_print(int top, char *text)
 {
-#if defined(CONFIG_HAVE_GFX_CHARSET)
-    utf8_encode(text, text, pal_wctob);
-#endif
-
     const char *fragment = text;
-#if !defined(CONFIG_HAVE_GFX_CHARSET)
-    char line_buff[2 * TEXT_WIDTH + 1];
-#else
-    char line_buff[TEXT_WIDTH + 1];
-#endif
+    char        line_buff[MAX_LINE_SIZE + 1];
 
     int line = 0;
     while (*fragment)

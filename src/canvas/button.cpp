@@ -23,9 +23,6 @@ button::draw()
 
     char buff[GFX_COLUMNS / 2];
     shiz_canvas_load_string(&field_, buff, sizeof(buff));
-#if defined(CONFIG_HAVE_GFX_CHARSET)
-    utf8_encode(buff, buff, pal_wctob);
-#endif
 
     gfx_rect inner = {field.left - 1, field.top, field.width + 2, field.height};
     gfx_fill_rectangle(&field, GFX_COLOR_WHITE);
