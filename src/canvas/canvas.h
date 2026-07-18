@@ -1,7 +1,7 @@
 #ifndef CANVAS_CANVAS_H
 #define CANVAS_CANVAS_H
 
-#include "../deps-lavender.h"
+#include "deps-lavender.h"
 #include <sharizard.h>
 
 #define TEXT_WIDTH (GFX_COLUMNS - 2)
