@@ -278,18 +278,18 @@ _has_syslink(void)
 }
 
 static void
-_get_scaled_dimensions(gfx_bitmap *bm, int *width, int *height)
+_get_scaled_dimensions(shiz_bitmap *bm, int *width, int *height)
 {
     HDC   dc = GetDC(NULL);
     float scale = (float)GetDeviceCaps(dc, LOGPIXELSX) / 96.f;
     ReleaseDC(NULL, dc);
 
-    *width = bm->width * scale;
-    *height = bm->height * scale;
+    *width = bm->size.x * scale;
+    *height = bm->size.y * scale;
 }
 
 static void
-_set_scaled_bitmap(HWND ctl, gfx_bitmap *bm, int new_width, int new_height)
+_set_scaled_bitmap(HWND ctl, shiz_bitmap *bm, int new_width, int new_height)
 {
     HBITMAP bmp, old_src_bmp, old_dst_bmp, new_bmp;
     HDC     src_dc, dst_dc;
@@ -302,8 +302,8 @@ _set_scaled_bitmap(HWND ctl, gfx_bitmap *bm, int new_width, int new_height)
     new_bmp = CreateCompatibleBitmap(src_dc, new_width, new_height);
     old_dst_bmp = (HBITMAP)SelectObject(dst_dc, new_bmp);
 
-    StretchBlt(dst_dc, 0, 0, new_width, new_height, src_dc, 0, 0, bm->width,
-               bm->height, SRCCOPY);
+    StretchBlt(dst_dc, 0, 0, new_width, new_height, src_dc, 0, 0, bm->size.x,
+               bm->size.y, SRCCOPY);
 
     SelectObject(src_dc, old_src_bmp);
     SelectObject(dst_dc, old_dst_bmp);
@@ -499,10 +499,10 @@ _create_controls(HWND dlg, shiz_page *page)
 
         if (SHIZFT_BITMAP == field->type)
         {
-            gfx_bitmap *bm = (gfx_bitmap *)field->data;
-            DWORD       style = WS_VISIBLE | WS_CHILD | SS_BITMAP;
-            HWND        ctl;
-            int         left = 0, width, height;
+            shiz_bitmap *bm = (shiz_bitmap *)field->data;
+            DWORD        style = WS_VISIBLE | WS_CHILD | SS_BITMAP;
+            HWND         ctl;
+            int          left = 0, width, height;
 
             _get_scaled_dimensions(bm, &width, &height);
             if (SHIZFF_CENTER == (SHIZFF_ALIGN & field->flags))
@@ -601,8 +601,8 @@ _update_controls(HWND dlg, shiz_page *page)
             HWND ctl = GetDlgItem(dlg, CPX_CTLID(i));
             int  width, height;
 
-            _get_scaled_dimensions((gfx_bitmap *)field->data, &width, &height);
-            _set_scaled_bitmap(ctl, (gfx_bitmap *)field->data, width, height);
+            _get_scaled_dimensions((shiz_bitmap *)field->data, &width, &height);
+            _set_scaled_bitmap(ctl, (shiz_bitmap *)field->data, width, height);
         }
     }
 }

@@ -7,9 +7,9 @@ bitmap::bitmap(shiz_field &field) : widget{field}
     shiz_vec2i glyph;
     gfx_get_glyph_dimensions(&glyph);
 
-    auto &bm = *reinterpret_cast<gfx_bitmap *>(field_.data);
-    size_.x = (bm.width + glyph.x - 1) / glyph.x;
-    size_.y = (bm.height + glyph.y - 1) / glyph.y + 1;
+    auto &bm = *reinterpret_cast<shiz_bitmap *>(field_.data);
+    size_.x = (bm.size.x + glyph.x - 1) / glyph.x;
+    size_.y = (bm.size.y + glyph.y - 1) / glyph.y + 1;
 }
 
 void
@@ -18,7 +18,7 @@ bitmap::draw()
     shiz_vec2i glyph;
     gfx_get_glyph_dimensions(&glyph);
 
-    auto &bm = *reinterpret_cast<gfx_bitmap *>(field_.data);
+    auto &bm = *reinterpret_cast<shiz_bitmap *>(field_.data);
     auto  pos = get_absolute_position();
 
     auto x = pos.x;

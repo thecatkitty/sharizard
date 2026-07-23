@@ -81,7 +81,7 @@ extern void
 gfx_get_screen_dimensions(shiz_vec2i *dim);
 
 extern bool
-gfx_draw_bitmap(gfx_bitmap *bm, int x, int y);
+gfx_draw_bitmap(shiz_bitmap *bm, int x, int y);
 
 extern bool
 gfx_draw_line(int x, int y, const shiz_vec2i *extent, gfx_color color);

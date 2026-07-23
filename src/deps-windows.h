@@ -4,11 +4,13 @@
 #define UNICODE
 #include <windows.h>
 
+#include <sharizard/base.h>
+
 extern HWND
 windows_get_hwnd(void);
 
 extern HBITMAP
-windows_create_dib(HDC dc, gfx_bitmap *bm);
+windows_create_dib(HDC dc, shiz_bitmap *bm);
 
 extern uint16_t
 windows_get_version(void);
