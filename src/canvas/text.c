@@ -1,5 +1,7 @@
 #include <string.h>
 
+#include <sharizard/drawing.h>
+
 #include "canvas.h"
 
 #define MAX_LINE_SIZE (2 * GFX_COLUMNS)
@@ -135,10 +137,12 @@ shiz_canvas_print(int top, char *text)
     int line = 0;
     while (*fragment)
     {
+        int err;
+
         fragment += _wrap(line_buff, fragment, TEXT_WIDTH, '\n');
-        if (!gfx_draw_text(line_buff, 1, top + line))
+        if ((err = shizd_draw_text(NULL, 1, top + line, line_buff)) < 0)
         {
-            return -1;
+            return err;
         }
         line++;
     }

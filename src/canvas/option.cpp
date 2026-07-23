@@ -2,6 +2,8 @@
 #include <cstdio>
 #include <cstring>
 
+#include <sharizard/drawing.h>
+
 #include "widgets.hpp"
 
 using namespace shiz::canvas;
@@ -64,19 +66,19 @@ void
 option::mark(bool checked)
 {
     shiz_vec2i glyph;
-    gfx_get_glyph_dimensions(&glyph);
+    shizd_get_cell_size(nullptr, &glyph);
 
     auto pos = get_absolute_position();
-    gfx_fill_rectangle((pos.x + 1) * glyph.x, pos.y * glyph.y, &glyph,
-                       GFX_COLOR_WHITE);
+    shizd_fill_rectangle(nullptr, (pos.x + 1) * glyph.x, pos.y * glyph.y,
+                         &glyph, SHIZ_COLOR_WHITE);
 
     char buff[4];
     strcpy(buff, CONFIG_SHIZ_RADIO_FIELD_CHARACTER);
-    gfx_draw_text(buff, pos.x + 1, pos.y);
+    shizd_draw_text(nullptr, pos.x + 1, pos.y, buff);
     if (checked)
     {
         strcpy(buff, CONFIG_SHIZ_RADIO_MARK_CHARACTER);
-        gfx_draw_text(buff, pos.x + 1, pos.y);
+        shizd_draw_text(nullptr, pos.x + 1, pos.y, buff);
     }
 }
 

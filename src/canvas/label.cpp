@@ -1,5 +1,7 @@
 #include <cstring>
 
+#include <sharizard/drawing.h>
+
 #include "widgets.hpp"
 
 using namespace shiz::canvas;
@@ -23,12 +25,12 @@ void
 label::draw()
 {
     shiz_vec2i glyph;
-    gfx_get_glyph_dimensions(&glyph);
+    shizd_get_cell_size(nullptr, &glyph);
 
     auto pos = get_absolute_position();
     auto size = shiz_vec2i{size_.x * glyph.x, size_.y * glyph.y};
-    gfx_fill_rectangle(pos.x * glyph.x, pos.y * glyph.y, &size,
-                       GFX_COLOR_WHITE);
+    shizd_fill_rectangle(nullptr, pos.x * glyph.x, pos.y * glyph.y, &size,
+                         SHIZ_COLOR_WHITE);
 
     char buffer[GFX_COLUMNS * 4];
     if (SHIZFF_DYNAMIC & field_.flags)
