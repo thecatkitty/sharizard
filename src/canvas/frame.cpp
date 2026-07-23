@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 
+#include <sharizard/drawing.h>
+
 extern "C"
 {
 #include "../resource.h"
@@ -35,15 +37,15 @@ std::unique_ptr<canvas::panel> panel_{};
 void
 shiz_canvas_init_frame(void)
 {
-    gfx_get_screen_dimensions(&_screen);
-    gfx_get_glyph_dimensions(&_glyph);
+    shizd_get_viewbox_size(nullptr, &_screen);
+    shizd_get_cell_size(nullptr, &_glyph);
 
     auto bar = shiz_vec2i{_screen.x, 3 * _glyph.y + 1};
-    gfx_fill_rectangle(0, _screen.y - bar.y, &bar, GFX_COLOR_BLACK);
+    shizd_fill_rectangle(nullptr, 0, _screen.y - bar.y, &bar, SHIZ_COLOR_BLACK);
 
-    gfx_draw_text(pal_get_version_string(), 1, 22);
-    gfx_draw_text("https://celones.pl/lavender", 1, 23);
-    gfx_draw_text("(C) 2021-2026 Mateusz Karcz", 1, 24);
+    shizd_draw_text(nullptr, 1, 22, pal_get_version_string());
+    shizd_draw_text(nullptr, 1, 23, "https://celones.pl/lavender");
+    shizd_draw_text(nullptr, 1, 24, "(C) 2021-2026 Mateusz Karcz");
 
     _next.move(GFX_COLUMNS - 22, GFX_LINES - 3);
     _cancel.move(GFX_COLUMNS - 11, GFX_LINES - 3);
@@ -53,19 +55,19 @@ static void
 _draw_title(char *title)
 {
     auto bar = shiz_vec2i{_screen.x, _glyph.y + 1};
-    gfx_fill_rectangle(0, 0, &bar, GFX_COLOR_BLACK);
-    gfx_draw_text(title, 1, 0);
+    shizd_fill_rectangle(nullptr, 0, 0, &bar, SHIZ_COLOR_BLACK);
+    shizd_draw_text(nullptr, 1, 0, title);
 }
 
 static void
 _draw_background(void)
 {
     auto bg = shiz_vec2i{_screen.x, (GFX_LINES - 4) * _glyph.y};
-    gfx_fill_rectangle(0, _glyph.y, &bg, GFX_COLOR_WHITE);
+    shizd_fill_rectangle(nullptr, 0, _glyph.y, &bg, SHIZ_COLOR_WHITE);
 
     auto footer = shiz_vec2i{_screen.x / 2, 3 * _glyph.y};
-    gfx_fill_rectangle(footer.x, _screen.y - footer.y, &footer,
-                       GFX_COLOR_BLACK);
+    shizd_fill_rectangle(nullptr, footer.x, _screen.y - footer.y, &footer,
+                         SHIZ_COLOR_BLACK);
 }
 
 static bool

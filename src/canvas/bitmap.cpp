@@ -1,3 +1,5 @@
+#include <sharizard/drawing.h>
+
 #include "widgets.hpp"
 
 using namespace shiz::canvas;
@@ -5,7 +7,7 @@ using namespace shiz::canvas;
 bitmap::bitmap(shiz_field &field) : widget{field}
 {
     shiz_vec2i glyph;
-    gfx_get_glyph_dimensions(&glyph);
+    shizd_get_cell_size(nullptr, &glyph);
 
     auto &bm = *reinterpret_cast<shiz_bitmap *>(field_.data);
     size_.x = (bm.size.x + glyph.x - 1) / glyph.x;
@@ -16,7 +18,7 @@ void
 bitmap::draw()
 {
     shiz_vec2i glyph;
-    gfx_get_glyph_dimensions(&glyph);
+    shizd_get_cell_size(nullptr, &glyph);
 
     auto &bm = *reinterpret_cast<shiz_bitmap *>(field_.data);
     auto  pos = get_absolute_position();
@@ -34,5 +36,5 @@ bitmap::draw()
 
     auto y = pos.y * glyph.y;
 
-    gfx_draw_bitmap(&bm, x, y);
+    shizd_draw_bitmap(nullptr, x, y, &bm);
 }

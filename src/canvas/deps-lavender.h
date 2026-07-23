@@ -13,27 +13,6 @@
 #define CONFIG_SHIZ_RADIO_MARK_CHARACTER "x"
 #endif
 
-typedef enum
-{
-    GFX_COLOR_BLACK = 0,
-    GFX_COLOR_NAVY = 1,
-    GFX_COLOR_GREEN = 2,
-    GFX_COLOR_TEAL = 3,
-    GFX_COLOR_MAROON = 4,
-    GFX_COLOR_PURPLE = 5,
-    GFX_COLOR_OLIVE = 6,
-    GFX_COLOR_SILVER = 7,
-    GFX_COLOR_GRAY = 8,
-    GFX_COLOR_BLUE = 9,
-    GFX_COLOR_LIME = 10,
-    GFX_COLOR_CYAN = 11,
-    GFX_COLOR_RED = 12,
-    GFX_COLOR_FUCHSIA = 13,
-    GFX_COLOR_YELLOW = 14,
-    GFX_COLOR_WHITE = 15,
-    GFX_COLOR_UNKNOWN = -1
-} gfx_color;
-
 #define GFX_COLUMNS 80
 #define GFX_LINES   25
 
@@ -71,29 +50,6 @@ typedef enum
 #define VK_OEM_PLUS  0xBB
 #define VK_OEM_MINUS 0xBD
 #endif
-
-// Get width and height of a glyph in pixels
-extern void
-gfx_get_glyph_dimensions(shiz_vec2i *dim);
-
-// Get width and height of the screen area in pixels
-extern void
-gfx_get_screen_dimensions(shiz_vec2i *dim);
-
-extern bool
-gfx_draw_bitmap(shiz_bitmap *bm, int x, int y);
-
-extern bool
-gfx_draw_line(int x, int y, const shiz_vec2i *extent, gfx_color color);
-
-extern bool
-gfx_draw_rectangle(int x, int y, const shiz_vec2i *extent, gfx_color color);
-
-extern bool
-gfx_fill_rectangle(int x, int y, const shiz_vec2i *extent, gfx_color color);
-
-extern bool
-gfx_draw_text(const char *str, uint16_t x, uint16_t y);
 
 extern uint16_t
 pal_get_keystroke(void);
