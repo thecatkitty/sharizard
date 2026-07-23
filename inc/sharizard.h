@@ -1,9 +1,7 @@
 #ifndef SHARIZARD_H
 #define SHARIZARD_H
 
-#include <inttypes.h>
-#include <stdbool.h>
-#include <stddef.h>
+#include <sharizard/base.h>
 
 enum shiz_result
 {
