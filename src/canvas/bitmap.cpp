@@ -4,35 +4,35 @@ using namespace shiz::canvas;
 
 bitmap::bitmap(shiz_field &field) : widget{field}
 {
-    gfx_dimensions glyph;
+    shiz_vec2i glyph;
     gfx_get_glyph_dimensions(&glyph);
 
     auto &bm = *reinterpret_cast<gfx_bitmap *>(field_.data);
-    rect_.width = (bm.width + glyph.width - 1) / glyph.width;
-    rect_.height = (bm.height + glyph.height - 1) / glyph.height + 1;
+    size_.x = (bm.width + glyph.x - 1) / glyph.x;
+    size_.y = (bm.height + glyph.y - 1) / glyph.y + 1;
 }
 
 void
 bitmap::draw()
 {
-    gfx_dimensions glyph;
+    shiz_vec2i glyph;
     gfx_get_glyph_dimensions(&glyph);
 
     auto &bm = *reinterpret_cast<gfx_bitmap *>(field_.data);
-    auto  pos = get_position();
+    auto  pos = get_absolute_position();
 
-    auto x = pos.left;
+    auto x = pos.x;
     if (SHIZFF_CENTER == (SHIZFF_ALIGN & field_.flags))
     {
-        x += (TEXT_WIDTH - rect_.width) / 2;
+        x += (TEXT_WIDTH - size_.x) / 2;
     }
     else if (SHIZFF_RIGHT == (SHIZFF_ALIGN & field_.flags))
     {
-        x += TEXT_WIDTH - rect_.width;
+        x += TEXT_WIDTH - size_.x;
     }
-    x *= glyph.width;
+    x *= glyph.x;
 
-    auto y = pos.top * glyph.height;
+    auto y = pos.y * glyph.y;
 
     gfx_draw_bitmap(&bm, x, y);
 }

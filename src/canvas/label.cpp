@@ -22,14 +22,13 @@ label::click(int x, int y)
 void
 label::draw()
 {
-    gfx_dimensions glyph;
+    shiz_vec2i glyph;
     gfx_get_glyph_dimensions(&glyph);
-    auto rect = get_position();
-    rect.left *= glyph.width;
-    rect.width *= glyph.width;
-    rect.top *= glyph.height;
-    rect.height *= glyph.height;
-    gfx_fill_rectangle(&rect, GFX_COLOR_WHITE);
+
+    auto pos = get_absolute_position();
+    auto size = shiz_vec2i{size_.x * glyph.x, size_.y * glyph.y};
+    gfx_fill_rectangle(pos.x * glyph.x, pos.y * glyph.y, &size,
+                       GFX_COLOR_WHITE);
 
     char buffer[GFX_COLUMNS * 4];
     if (SHIZFF_DYNAMIC & field_.flags)
@@ -71,6 +70,6 @@ label::draw()
         *dst = 0;
     }
 
-    rect_.width = GFX_COLUMNS - 2;
-    rect_.height = shiz_canvas_print(rect_.top, buffer) + 1;
+    size_.x = GFX_COLUMNS - 2;
+    size_.y = shiz_canvas_print(position_.y, buffer) + 1;
 }

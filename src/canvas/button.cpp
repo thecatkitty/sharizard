@@ -6,31 +6,30 @@ using namespace shiz::canvas;
 
 button::button(shiz_field &field) : widget{field}
 {
-    rect_.width = 11;
-    rect_.height = 3;
+    size_.x = 11;
+    size_.y = 3;
 }
 
 void
 button::draw()
 {
-    gfx_dimensions glyph;
+    shiz_vec2i glyph;
     gfx_get_glyph_dimensions(&glyph);
 
-    auto field =
-        gfx_rect{rect_.left * glyph.width + (glyph.width / 2),
-                 rect_.top * glyph.height + (glyph.height * 3 / 4),
-                 (rect_.width - 2) * glyph.width, glyph.height * 3 / 2};
+    int  x = position_.x * glyph.x + (glyph.x / 2);
+    int  y = position_.y * glyph.y + (glyph.y * 3 / 4);
+    auto size = shiz_vec2i{(size_.x - 2) * glyph.x, glyph.y * 3 / 2};
 
     char buff[GFX_COLUMNS / 2];
     shiz_canvas_load_string(&field_, buff, sizeof(buff));
 
-    gfx_rect inner = {field.left - 1, field.top, field.width + 2, field.height};
-    gfx_fill_rectangle(&field, GFX_COLOR_WHITE);
-    gfx_draw_rectangle(&field, GFX_COLOR_BLACK);
-    gfx_draw_rectangle(&inner, GFX_COLOR_BLACK);
+    auto inner_size = shiz_vec2i{size.x + 2, size.y};
+    gfx_fill_rectangle(x, y, &size, GFX_COLOR_WHITE);
+    gfx_draw_rectangle(x, y, &size, GFX_COLOR_BLACK);
+    gfx_draw_rectangle(x - 1, y, &inner_size, GFX_COLOR_BLACK);
 
-    auto pos = get_position();
-    gfx_draw_text(buff, pos.left + (8 - strlen(buff)) / 2 + 1, pos.top + 1);
+    auto pos = get_absolute_position();
+    gfx_draw_text(buff, pos.x + (8 - strlen(buff)) / 2 + 1, pos.y + 1);
 }
 
 int
