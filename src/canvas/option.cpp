@@ -8,11 +8,8 @@ using namespace shiz::canvas;
 
 option::option(shiz_field &field) : widget{field}
 {
-    gfx_dimensions glyph;
-    gfx_get_glyph_dimensions(&glyph);
-
-    rect_.width = TEXT_WIDTH;
-    rect_.height = 2;
+    size_.x = TEXT_WIDTH;
+    size_.y = 2;
 }
 
 void
@@ -35,7 +32,7 @@ option::draw()
         }
     }
 
-    shiz_canvas_print(rect_.top, buffer);
+    shiz_canvas_print(position_.y, buffer);
 
     mark(SHIZFF_CHECKED & field_.flags);
 }
@@ -66,21 +63,20 @@ option::click(int x, int y)
 void
 option::mark(bool checked)
 {
-    gfx_dimensions glyph;
+    shiz_vec2i glyph;
     gfx_get_glyph_dimensions(&glyph);
 
-    gfx_rect pos = get_position();
-    gfx_rect box = gfx_rect{(pos.left + 1) * glyph.width,
-                            pos.top * glyph.height, glyph.width, glyph.height};
-    gfx_fill_rectangle(&box, GFX_COLOR_WHITE);
+    auto pos = get_absolute_position();
+    gfx_fill_rectangle((pos.x + 1) * glyph.x, pos.y * glyph.y, &glyph,
+                       GFX_COLOR_WHITE);
 
     char buff[4];
     strcpy(buff, CONFIG_SHIZ_RADIO_FIELD_CHARACTER);
-    gfx_draw_text(buff, pos.left + 1, pos.top);
+    gfx_draw_text(buff, pos.x + 1, pos.y);
     if (checked)
     {
         strcpy(buff, CONFIG_SHIZ_RADIO_MARK_CHARACTER);
-        gfx_draw_text(buff, pos.left + 1, pos.top);
+        gfx_draw_text(buff, pos.x + 1, pos.y);
     }
 }
 

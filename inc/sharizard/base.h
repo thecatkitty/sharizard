@@ -5,4 +5,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+typedef struct
+{
+    int x;
+    int y;
+} shiz_vec2i;
+
 #endif // SHARIZARD_BASE_H

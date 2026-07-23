@@ -15,8 +15,8 @@ extern "C"
 using namespace shiz;
 
 // Screen metrics
-static gfx_dimensions _glyph = {0, 0};
-static gfx_rect       _screen = {0, 0, 0, 0};
+static shiz_vec2i _glyph = {0, 0};
+static shiz_vec2i _screen = {0, 0};
 
 // Buttons
 static shiz_field     _cancel_field{0, SHIZFF_STATIC, IDS_CANCEL};
@@ -35,16 +35,11 @@ std::unique_ptr<canvas::panel> panel_{};
 void
 shiz_canvas_init_frame(void)
 {
-    gfx_dimensions dim;
-    gfx_get_screen_dimensions(&dim);
+    gfx_get_screen_dimensions(&_screen);
     gfx_get_glyph_dimensions(&_glyph);
 
-    _screen.width = dim.width;
-    _screen.height = dim.height;
-
-    gfx_rect bar = {0, 0, _screen.width, 3 * _glyph.height + 1};
-    bar.top = _screen.height - bar.height;
-    gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
+    auto bar = shiz_vec2i{_screen.x, 3 * _glyph.y + 1};
+    gfx_fill_rectangle(0, _screen.y - bar.y, &bar, GFX_COLOR_BLACK);
 
     gfx_draw_text(pal_get_version_string(), 1, 22);
     gfx_draw_text("https://celones.pl/lavender", 1, 23);
@@ -57,39 +52,38 @@ shiz_canvas_init_frame(void)
 static void
 _draw_title(char *title)
 {
-    gfx_rect bar = {0, 0, _screen.width, _glyph.height + 1};
-    gfx_fill_rectangle(&bar, GFX_COLOR_BLACK);
+    auto bar = shiz_vec2i{_screen.x, _glyph.y + 1};
+    gfx_fill_rectangle(0, 0, &bar, GFX_COLOR_BLACK);
     gfx_draw_text(title, 1, 0);
 }
 
 static void
 _draw_background(void)
 {
-    gfx_rect bg = {0, _glyph.height, _screen.width,
-                   (GFX_LINES - 4) * _glyph.height};
-    gfx_fill_rectangle(&bg, GFX_COLOR_WHITE);
+    auto bg = shiz_vec2i{_screen.x, (GFX_LINES - 4) * _glyph.y};
+    gfx_fill_rectangle(0, _glyph.y, &bg, GFX_COLOR_WHITE);
 
-    gfx_rect footer = {0, 0, _screen.width / 2, 3 * _glyph.height};
-    footer.left = footer.width;
-    footer.top = _screen.height - footer.height;
-    gfx_fill_rectangle(&footer, GFX_COLOR_BLACK);
+    auto footer = shiz_vec2i{_screen.x / 2, 3 * _glyph.y};
+    gfx_fill_rectangle(footer.x, _screen.y - footer.y, &footer,
+                       GFX_COLOR_BLACK);
 }
 
 static bool
 _is_pressed(const canvas::widget &widget, uint16_t msx, uint16_t msy)
 {
-    gfx_rect pos = widget.get_position();
-    if (0 > pos.left)
+    auto pos = widget.get_absolute_position();
+    if (0 > pos.x)
     {
         return false;
     }
 
-    if ((pos.left > int(msx)) || ((pos.left + pos.width) <= int(msx)))
+    auto size = widget.get_size();
+    if ((pos.x > int(msx)) || ((pos.x + size.x) <= int(msx)))
     {
         return false;
     }
 
-    if ((pos.top > int(msy)) || ((pos.top + pos.height) <= int(msy)))
+    if ((pos.y > int(msy)) || ((pos.y + size.y) <= int(msy)))
     {
         return false;
     }
@@ -129,7 +123,7 @@ _create_controls(shiz_page *page)
             {
                 label.move(1, cy);
                 label.draw();
-                cy = canvas::get_bottom(label.get_area());
+                cy = label.get_position().y + label.get_size().y;
             }
         }
 
@@ -138,7 +132,7 @@ _create_controls(shiz_page *page)
             auto &textbox = panel_->create<canvas::textbox>(*field);
             textbox.move(1, cy);
             textbox.draw();
-            cy = canvas::get_bottom(textbox.get_area());
+            cy = textbox.get_position().y + textbox.get_size().y;
         }
 
         if (!has_checkbox && (SHIZFT_CHECKBOX == field->type))
@@ -155,7 +149,7 @@ _create_controls(shiz_page *page)
             auto &option = panel_->create<canvas::option>(*field);
             option.move(1, cy);
             option.draw();
-            cy = canvas::get_bottom(option.get_area());
+            cy = option.get_position().y + option.get_size().y;
         }
 
         if (SHIZFT_BITMAP == field->type)
@@ -163,7 +157,7 @@ _create_controls(shiz_page *page)
             auto &bitmap = panel_->create<canvas::bitmap>(*field);
             bitmap.move(1, cy);
             bitmap.draw();
-            cy = canvas::get_bottom(bitmap.get_area());
+            cy = bitmap.get_position().y + bitmap.get_size().y;
         }
     }
 }
@@ -221,8 +215,8 @@ shiz_canvas_click(uint16_t x, uint16_t y)
         return shiz_canvas_key(VK_ESCAPE);
     }
 
-    auto pos = panel_->get_position();
-    panel_->click(x - pos.left, y - pos.top);
+    auto pos = panel_->get_absolute_position();
+    panel_->click(x - pos.x, y - pos.y);
     return SHIZ_INCOMPLETE;
 }
 

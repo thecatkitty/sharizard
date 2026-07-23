@@ -4,17 +4,18 @@
 
 using namespace shiz::canvas;
 
-checkbox::checkbox(shiz_field &field) : widget{field}, box_{}
+checkbox::checkbox(shiz_field &field)
+    : widget{field}, box_position_{}, box_size_{}
 {
-    gfx_dimensions glyph;
+    shiz_vec2i glyph;
     gfx_get_glyph_dimensions(&glyph);
 
-    rect_.width = TEXT_WIDTH;
-    rect_.height = 2;
+    size_.x = TEXT_WIDTH;
+    size_.y = 2;
 
-    box_.left = glyph.width * 2 / 3 + 1;
-    box_.top = (glyph.height - glyph.width) / 2;
-    box_.width = box_.height = glyph.width + 4;
+    box_position_.x = glyph.x * 2 / 3 + 1;
+    box_position_.y = (glyph.y - glyph.x) / 2;
+    box_size_.x = box_size_.y = glyph.x + 4;
 }
 
 void
@@ -23,7 +24,7 @@ checkbox::draw()
     char buffer[GFX_COLUMNS * 4] = "   ";
     shiz_canvas_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
     std::strcat(buffer, " [F8]");
-    shiz_canvas_print(rect_.top, buffer);
+    shiz_canvas_print(position_.y, buffer);
 
     mark(SHIZFF_CHECKED & field_.flags);
 }
@@ -45,22 +46,20 @@ checkbox::click(int x, int y)
 void
 checkbox::mark(bool checked)
 {
-    gfx_dimensions glyph;
+    shiz_vec2i glyph;
     gfx_get_glyph_dimensions(&glyph);
 
-    gfx_rect box = box_;
-    gfx_rect pos = get_position();
-    box.left += pos.left * glyph.width;
-    box.top += pos.top * glyph.height;
+    auto pos = get_absolute_position();
+    int  x = pos.x * glyph.x + box_position_.x;
+    int  y = pos.y * glyph.y + box_position_.y;
 
-    gfx_draw_rectangle(&box, GFX_COLOR_BLACK);
+    gfx_draw_rectangle(x, y, &box_size_, GFX_COLOR_BLACK);
 #if !defined(CONFIG_HAVE_GFX_XOR_BLENDING)
-    gfx_fill_rectangle(&box, GFX_COLOR_WHITE);
+    gfx_fill_rectangle(x, y, &box_size_, GFX_COLOR_WHITE);
 #endif
 
     if (checked)
     {
-        gfx_draw_text(CONFIG_SHIZ_CHECKBOX_MARK_CHARACTER, pos.left + 1,
-                      pos.top);
+        gfx_draw_text(CONFIG_SHIZ_CHECKBOX_MARK_CHARACTER, pos.x + 1, pos.y);
     }
 }

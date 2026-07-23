@@ -1,6 +1,8 @@
 #ifndef CANVAS_DEPS_LAVENDER_H
 #define CANVAS_DEPS_LAVENDER_H
 
+#include <sharizard/base.h>
+
 #include "../deps-lavender.h"
 
 #define CONFIG_SHIZ_CHECKBOX_MARK_CHARACTER "x"
@@ -10,20 +12,6 @@
 #else
 #define CONFIG_SHIZ_RADIO_MARK_CHARACTER "x"
 #endif
-
-typedef struct
-{
-    int width;
-    int height;
-} gfx_dimensions;
-
-typedef struct
-{
-    int left;
-    int top;
-    int width;
-    int height;
-} gfx_rect;
 
 typedef enum
 {
@@ -86,23 +74,23 @@ typedef enum
 
 // Get width and height of a glyph in pixels
 extern void
-gfx_get_glyph_dimensions(gfx_dimensions *dim);
+gfx_get_glyph_dimensions(shiz_vec2i *dim);
 
 // Get width and height of the screen area in pixels
 extern void
-gfx_get_screen_dimensions(gfx_dimensions *dim);
+gfx_get_screen_dimensions(shiz_vec2i *dim);
 
 extern bool
 gfx_draw_bitmap(gfx_bitmap *bm, int x, int y);
 
 extern bool
-gfx_draw_line(const gfx_rect *rect, gfx_color color);
+gfx_draw_line(int x, int y, const shiz_vec2i *extent, gfx_color color);
 
 extern bool
-gfx_draw_rectangle(const gfx_rect *rect, gfx_color color);
+gfx_draw_rectangle(int x, int y, const shiz_vec2i *extent, gfx_color color);
 
 extern bool
-gfx_fill_rectangle(const gfx_rect *rect, gfx_color color);
+gfx_fill_rectangle(int x, int y, const shiz_vec2i *extent, gfx_color color);
 
 extern bool
 gfx_draw_text(const char *str, uint16_t x, uint16_t y);

@@ -18,18 +18,18 @@ panel::click(int x, int y)
 {
     for (auto &child : children_)
     {
-        auto pos = child->get_position();
-        if ((pos.left > x) || ((pos.left + pos.width) <= x))
+        auto pos = child->get_absolute_position();
+        if ((pos.x > x) || ((pos.x + size_.x) <= x))
         {
             continue;
         }
 
-        if ((pos.top > y) || ((pos.top + pos.height) <= y))
+        if ((pos.y > y) || ((pos.y + size_.y) <= y))
         {
             continue;
         }
 
-        auto status = child->click(x - pos.left, y - pos.top);
+        auto status = child->click(x - pos.x, y - pos.y);
         if (0 != status)
         {
             return status;

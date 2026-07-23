@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 
+#include <sharizard/base.h>
+
 extern "C"
 {
 #include "canvas.h"
@@ -15,24 +17,19 @@ namespace canvas
 
 extern shiz_field null_field;
 
-inline int
-get_bottom(gfx_rect rect)
-{
-    return rect.top + rect.height;
-}
-
 struct widget
 {
     widget(const widget &) = delete;
     virtual ~widget() = default;
 
     widget(const shiz_page &page)
-        : page_{&page}, field_{null_field}, rect_{}, parent_{nullptr}
+        : page_{&page}, field_{null_field}, position_{}, size_{},
+          parent_{nullptr}
     {
     }
 
     widget(shiz_field &field)
-        : page_{}, field_{field}, rect_{}, parent_{nullptr}
+        : page_{}, field_{field}, position_{}, size_{}, parent_{nullptr}
     {
     }
 
@@ -51,23 +48,27 @@ struct widget
     void
     move(int left, int top)
     {
-        rect_.left = left;
-        rect_.top = top;
+        position_ = shiz_vec2i{left, top};
     }
 
-    const gfx_rect &
-    get_area() const
+    shiz_vec2i
+    get_absolute_position() const
     {
-        return rect_;
+        return parent_ ? shiz_vec2i{parent_->position_.x + position_.x,
+                                    parent_->position_.y + position_.y}
+                       : position_;
     }
 
-    gfx_rect
+    shiz_vec2i
     get_position() const
     {
-        return parent_ ? gfx_rect{parent_->rect_.left + rect_.left,
-                                  parent_->rect_.top + rect_.top, rect_.width,
-                                  rect_.height}
-                       : rect_;
+        return position_;
+    }
+
+    shiz_vec2i
+    get_size() const
+    {
+        return size_;
     }
 
     void
@@ -96,7 +97,8 @@ struct widget
   protected:
     const shiz_page *page_;
     shiz_field      &field_;
-    gfx_rect         rect_;
+    shiz_vec2i       position_;
+    shiz_vec2i       size_;
     widget          *parent_;
 };
 
@@ -135,7 +137,8 @@ struct checkbox : widget
     void
     mark(bool checked);
 
-    gfx_rect box_;
+    shiz_vec2i box_position_;
+    shiz_vec2i box_size_;
 };
 
 struct label : widget
@@ -237,7 +240,7 @@ struct textbox : widget
     uint32_t caret_period_;
     uint32_t caret_counter_;
     bool     caret_visible_;
-    int      position_;
+    int      caret_position_;
     int      state_;
 };
 
