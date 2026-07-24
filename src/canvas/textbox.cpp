@@ -3,6 +3,7 @@
 #include <tuple>
 
 #include <sharizard/drawing.h>
+#include <sharizard/input.h>
 
 #include "widgets.hpp"
 
@@ -192,19 +193,19 @@ textbox::key(int scancode)
     shizd_draw_line(nullptr, caret.first.x, caret.first.y, &caret.second,
                     SHIZ_COLOR_WHITE);
 
-    if ((VK_LEFT == scancode) && (0 < caret_position_))
+    if ((SHIZK_LEFT == scancode) && (0 < caret_position_))
     {
         caret_position_--;
         draw();
     }
 
-    if ((VK_RIGHT == scancode) && (int(textbox.length) > caret_position_))
+    if ((SHIZK_RIGHT == scancode) && (int(textbox.length) > caret_position_))
     {
         caret_position_++;
         draw();
     }
 
-    if ((VK_BACK == scancode) && (0 < caret_position_))
+    if ((SHIZK_BACKSPACE == scancode) && (0 < caret_position_))
     {
         std::memmove(textbox.buffer + caret_position_ - 1,
                      textbox.buffer + caret_position_,
@@ -215,7 +216,7 @@ textbox::key(int scancode)
         draw();
     }
 
-    if ((VK_DELETE == scancode) && (int(textbox.length) > caret_position_))
+    if ((SHIZK_DELETE == scancode) && (int(textbox.length) > caret_position_))
     {
         std::memmove(textbox.buffer + caret_position_,
                      textbox.buffer + caret_position_ + 1,
@@ -225,15 +226,15 @@ textbox::key(int scancode)
         draw();
     }
 
-    if (((' ' == scancode) || (VK_OEM_MINUS == scancode) ||
-         ((VK_DELETE < scancode) && (VK_F1 > scancode))) &&
+    if (((SHIZK_KP_MINUS == scancode) ||
+         ((' ' <= scancode) && (SHIZK_DELETE > scancode))) &&
         (textbox.length < textbox.capacity))
     {
         std::memmove(textbox.buffer + caret_position_ + 1,
                      textbox.buffer + caret_position_,
                      textbox.length - caret_position_);
         textbox.buffer[caret_position_] =
-            (VK_OEM_MINUS == scancode) ? '-' : (scancode & 0xFF);
+            (SHIZK_KP_MINUS == scancode) ? '-' : (scancode & 0xFF);
         caret_position_++;
         textbox.length++;
         textbox.buffer[textbox.length] = 0;

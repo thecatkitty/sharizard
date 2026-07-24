@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <sharizard/drawing.h>
+#include <sharizard/input.h>
 
 extern "C"
 {
@@ -98,8 +99,8 @@ _create_controls(shiz_page *page)
 {
     panel_ = std::make_unique<canvas::panel>(*page);
 
-    uint16_t x, y;
-    _mouse_down = PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y);
+    int x, y;
+    _mouse_down = SHIZ_MOUSE_LBUTTON & shizi_get_mouse(nullptr, &x, &y);
 
     int  cy = 2;
     bool has_checkbox = false;
@@ -194,7 +195,7 @@ shiz_canvas_enter_page(shiz_page *pages, int id)
 }
 
 int
-shiz_canvas_click(uint16_t x, uint16_t y)
+shiz_canvas_click(int x, int y)
 {
     if (_mouse_down)
     {
@@ -204,17 +205,17 @@ shiz_canvas_click(uint16_t x, uint16_t y)
     _mouse_down = true;
     if (_is_pressed(_back, x, y))
     {
-        return shiz_canvas_key(VK_PRIOR);
+        return shiz_canvas_key(SHIZK_PAGEUP);
     }
 
     if (_is_pressed(_next, x, y))
     {
-        return shiz_canvas_key(VK_RETURN);
+        return shiz_canvas_key(SHIZK_RETURN);
     }
 
     if (_is_pressed(_cancel, x, y))
     {
-        return shiz_canvas_key(VK_ESCAPE);
+        return shiz_canvas_key(SHIZK_ESCAPE);
     }
 
     auto pos = panel_->get_absolute_position();
@@ -231,14 +232,14 @@ shiz_canvas_key(uint16_t scancode)
         return SHIZ_INCOMPLETE;
     }
 
-    if (VK_ESCAPE == scancode)
+    if (SHIZK_ESCAPE == scancode)
     {
         return SHIZ_CANCEL;
     }
 
     shiz_textbox_data *textbox = shiz_find_textbox(_page);
 
-    if (VK_RETURN == scancode)
+    if (SHIZK_RETURN == scancode)
     {
         if (NULL == textbox)
         {
@@ -256,17 +257,17 @@ shiz_canvas_key(uint16_t scancode)
     }
 
     int id = shiz_get_page();
-    if ((VK_PRIOR == scancode) && (0 < id))
+    if ((SHIZK_PAGEUP == scancode) && (0 < id))
     {
         pal_disable_mouse();
         shiz_set_page(id - 1);
         return SHIZ_INCOMPLETE;
     }
 
-    if ((VK_F1 <= scancode) && (VK_F7 >= scancode))
+    if ((SHIZK_F1 <= scancode) && (SHIZK_F7 >= scancode))
     {
         auto option =
-            canvas::get_child<canvas::option>(*panel_, scancode - VK_F1);
+            canvas::get_child<canvas::option>(*panel_, scancode - SHIZK_F1);
         if (option)
         {
             option->click(-1, -1);
@@ -275,7 +276,7 @@ shiz_canvas_key(uint16_t scancode)
         return SHIZ_INCOMPLETE;
     }
 
-    if (VK_F8 == scancode)
+    if (SHIZK_F8 == scancode)
     {
         auto checkbox = canvas::get_child<canvas::checkbox>(*panel_);
         if (checkbox)

@@ -19,7 +19,7 @@ void
 shiz_canvas_enter_page(shiz_page *pages, int id);
 
 int
-shiz_canvas_click(uint16_t x, uint16_t y);
+shiz_canvas_click(int x, int y);
 
 int
 shiz_canvas_key(uint16_t scancode);

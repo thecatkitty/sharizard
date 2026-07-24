@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sharizard/input.h>
+
 #include "canvas.h"
 
 enum
@@ -111,15 +113,14 @@ shiz_handle(void)
         return SHIZ_INCOMPLETE;
     }
 
-    int      status = 0;
-    uint16_t x, y;
-    if (PAL_MOUSE_LBUTTON & pal_get_mouse(&x, &y))
+    int status = 0, x, y;
+    if (SHIZ_MOUSE_LBUTTON & shizi_get_mouse(NULL, &x, &y))
     {
         status = shiz_canvas_click(x, y);
     }
     else
     {
-        status = shiz_canvas_key(pal_get_keystroke());
+        status = shiz_canvas_key(shizi_get_key(NULL));
     }
 
     if (SHIZ_OK == status)
