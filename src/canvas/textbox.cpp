@@ -3,6 +3,7 @@
 #include <tuple>
 
 #include <sharizard/drawing.h>
+#include <sharizard/host.h>
 #include <sharizard/input.h>
 
 #include "widgets.hpp"
@@ -75,8 +76,8 @@ textbox::draw()
                          SHIZ_COLOR_WHITE);
     shizd_draw_text(nullptr, position_.x + 1, position_.y + 1, textbox.buffer);
 
-    caret_period_ = palpp_get_ticks(500);
-    caret_counter_ = palpp_get_counter();
+    caret_period_ = 500;
+    caret_counter_ = shizh_get_clock(nullptr);
 }
 
 bool
@@ -85,7 +86,7 @@ textbox::animate(bool valid)
     if (!valid && (STATE_PROMPT == state_))
     {
         state_ = STATE_INVALID1;
-        blink_start_ = palpp_get_counter();
+        blink_start_ = shizh_get_clock(nullptr);
         return false;
     }
 
@@ -93,7 +94,7 @@ textbox::animate(bool valid)
     auto field = get_field(pos.x, pos.y, size_);
     if (STATE_INVALID1 == state_)
     {
-        if (palpp_get_counter() > blink_start_ + palpp_get_ticks(63))
+        if (shizh_get_clock(nullptr) > blink_start_ + 63)
         {
             shizd_draw_rectangle(nullptr, field.first.x, field.first.y,
                                  &field.second, SHIZ_COLOR_GRAY);
@@ -105,7 +106,7 @@ textbox::animate(bool valid)
 
     if (STATE_INVALID2 == state_)
     {
-        if (palpp_get_counter() > blink_start_ + palpp_get_ticks(126))
+        if (shizh_get_clock(nullptr) > blink_start_ + 126)
         {
             shizd_draw_rectangle(nullptr, field.first.x, field.first.y,
                                  &field.second, SHIZ_COLOR_BLACK);
@@ -117,7 +118,7 @@ textbox::animate(bool valid)
 
     if (STATE_INVALID3 == state_)
     {
-        if (palpp_get_counter() > blink_start_ + palpp_get_ticks(189))
+        if (shizh_get_clock(nullptr) > blink_start_ + 189)
         {
             shizd_draw_rectangle(nullptr, field.first.x, field.first.y,
                                  &field.second, SHIZ_COLOR_GRAY);
@@ -129,13 +130,13 @@ textbox::animate(bool valid)
         return false;
     }
 
-    if (palpp_get_counter() > caret_counter_ + caret_period_)
+    if (shizh_get_clock(nullptr) > caret_counter_ + caret_period_)
     {
         auto pos = get_absolute_position();
         auto caret = get_caret(pos.x, pos.y, caret_position_);
         shizd_draw_line(nullptr, caret.first.x, caret.first.y, &caret.second,
                         caret_visible_ ? SHIZ_COLOR_BLACK : SHIZ_COLOR_WHITE);
-        caret_counter_ = palpp_get_counter();
+        caret_counter_ = shizh_get_clock(nullptr);
         caret_visible_ = !caret_visible_;
     }
 

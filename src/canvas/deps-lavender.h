@@ -22,10 +22,4 @@ pal_enable_mouse(void);
 extern int
 pal_load_string(unsigned id, char *buffer, int max_length);
 
-extern uint32_t
-palpp_get_counter(void);
-
-extern uint32_t
-palpp_get_ticks(unsigned ms);
-
 #endif // CANVAS_DEPS_LAVENDER_H
