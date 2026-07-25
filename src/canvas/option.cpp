@@ -17,7 +17,7 @@ option::option(shiz_field &field) : widget{field}
 void
 option::draw()
 {
-    char buffer[GFX_COLUMNS * 4] = "   ";
+    char buffer[SHIZ_CANVAS_COLUMNS * 4] = "   ";
     shiz_canvas_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
 
     auto page = get_page();

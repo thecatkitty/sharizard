@@ -48,7 +48,7 @@ textbox::textbox(shiz_field &field)
         textbox.buffer[0] = 0;
     }
 
-    size_t field_width = GFX_COLUMNS / 2 - 1;
+    size_t field_width = SHIZ_CANVAS_COLUMNS / 2 - 1;
     if (field_width < textbox.capacity)
     {
         field_width = textbox.capacity;

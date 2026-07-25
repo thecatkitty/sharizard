@@ -23,7 +23,7 @@ checkbox::checkbox(shiz_field &field)
 void
 checkbox::draw()
 {
-    char buffer[GFX_COLUMNS * 4] = "   ";
+    char buffer[SHIZ_CANVAS_COLUMNS * 4] = "   ";
     shiz_canvas_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
     std::strcat(buffer, " [F8]");
     shiz_canvas_print(position_.y, buffer);

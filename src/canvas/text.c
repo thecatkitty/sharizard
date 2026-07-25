@@ -4,7 +4,7 @@
 
 #include "canvas.h"
 
-#define MAX_LINE_SIZE (2 * GFX_COLUMNS)
+#define MAX_LINE_SIZE (2 * SHIZ_CANVAS_COLUMNS)
 
 typedef struct
 {

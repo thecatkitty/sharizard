@@ -88,10 +88,10 @@ shiz_handle(void)
             return status;
         }
 
-        char message[GFX_COLUMNS];
+        char message[SHIZ_CANVAS_COLUMNS];
         if ((INT_MAX == status) && (NULL != textbox))
         {
-            strncpy(message, textbox->alert, GFX_COLUMNS - 1);
+            strncpy(message, textbox->alert, SHIZ_CANVAS_COLUMNS - 1);
             free((void *)textbox->alert);
             textbox->alert = NULL;
         }

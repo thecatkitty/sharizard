@@ -22,7 +22,7 @@ button::draw()
     int  y = position_.y * glyph.y + (glyph.y * 3 / 4);
     auto size = shiz_vec2i{(size_.x - 2) * glyph.x, glyph.y * 3 / 2};
 
-    char buff[GFX_COLUMNS / 2];
+    char buff[SHIZ_CANVAS_COLUMNS / 2];
     shiz_canvas_load_string(&field_, buff, sizeof(buff));
 
     auto inner_size = shiz_vec2i{size.x + 2, size.y};

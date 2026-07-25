@@ -32,7 +32,7 @@ label::draw()
     shizd_fill_rectangle(nullptr, pos.x * glyph.x, pos.y * glyph.y, &size,
                          SHIZ_COLOR_WHITE);
 
-    char buffer[GFX_COLUMNS * 4];
+    char buffer[SHIZ_CANVAS_COLUMNS * 4];
     if (SHIZFF_DYNAMIC & field_.flags)
     {
         std::strncpy(buffer, reinterpret_cast<const char *>(field_.data),
@@ -72,6 +72,6 @@ label::draw()
         *dst = 0;
     }
 
-    size_.x = GFX_COLUMNS - 2;
+    size_.x = SHIZ_CANVAS_COLUMNS - 2;
     size_.y = shiz_canvas_print(position_.y, buffer) + 1;
 }

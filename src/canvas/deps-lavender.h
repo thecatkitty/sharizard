@@ -13,9 +13,6 @@
 #define CONFIG_SHIZ_RADIO_MARK_CHARACTER "x"
 #endif
 
-#define GFX_COLUMNS 80
-#define GFX_LINES   25
-
 extern void
 pal_enable_mouse(void);
 

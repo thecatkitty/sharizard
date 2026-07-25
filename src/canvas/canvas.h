@@ -4,7 +4,10 @@
 #include "deps-lavender.h"
 #include <sharizard.h>
 
-#define TEXT_WIDTH (GFX_COLUMNS - 2)
+#define SHIZ_CANVAS_COLUMNS 80 //!< Text grid width.
+#define SHIZ_CANVAS_ROWS    25 //!< Text grid height.
+
+#define TEXT_WIDTH (SHIZ_CANVAS_COLUMNS - 2)
 
 void
 shiz_canvas_load_string(shiz_field *field, char *buff, size_t length);

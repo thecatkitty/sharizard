@@ -48,8 +48,8 @@ shiz_canvas_init_frame(void)
     shizd_draw_text(nullptr, 1, 23, "https://celones.pl/lavender");
     shizd_draw_text(nullptr, 1, 24, "(C) 2021-2026 Mateusz Karcz");
 
-    _next.move(GFX_COLUMNS - 22, GFX_LINES - 3);
-    _cancel.move(GFX_COLUMNS - 11, GFX_LINES - 3);
+    _next.move(SHIZ_CANVAS_COLUMNS - 22, SHIZ_CANVAS_ROWS - 3);
+    _cancel.move(SHIZ_CANVAS_COLUMNS - 11, SHIZ_CANVAS_ROWS - 3);
 }
 
 static void
@@ -63,7 +63,7 @@ _draw_title(char *title)
 static void
 _draw_background(void)
 {
-    auto bg = shiz_vec2i{_screen.x, (GFX_LINES - 4) * _glyph.y};
+    auto bg = shiz_vec2i{_screen.x, (SHIZ_CANVAS_ROWS - 4) * _glyph.y};
     shizd_fill_rectangle(nullptr, 0, _glyph.y, &bg, SHIZ_COLOR_WHITE);
 
     auto footer = shiz_vec2i{_screen.x / 2, 3 * _glyph.y};
@@ -119,7 +119,7 @@ _create_controls(shiz_page *page)
             auto &label = panel_->create<canvas::label>(*field);
             if (SHIZFF_FOOTER & field->flags)
             {
-                label.move(1, GFX_LINES - 5);
+                label.move(1, SHIZ_CANVAS_ROWS - 5);
                 label.draw();
             }
             else
@@ -143,7 +143,7 @@ _create_controls(shiz_page *page)
             has_checkbox = true;
 
             auto &checkbox = panel_->create<canvas::checkbox>(*field);
-            checkbox.move(1, GFX_LINES - 5);
+            checkbox.move(1, SHIZ_CANVAS_ROWS - 5);
             checkbox.draw();
         }
 
@@ -171,7 +171,7 @@ shiz_canvas_enter_page(shiz_page *pages, int id)
     _page = pages + id;
     _page->proc(SHIZM_INIT, NULL, _page->data);
 
-    char buffer[GFX_COLUMNS * 2];
+    char buffer[SHIZ_CANVAS_COLUMNS * 2];
     _draw_background();
     pal_load_string(_page->title, buffer, sizeof(buffer));
     _draw_title(buffer);
@@ -179,7 +179,7 @@ shiz_canvas_enter_page(shiz_page *pages, int id)
 
     if (0 < id)
     {
-        _back.move(GFX_COLUMNS - 32, GFX_LINES - 3);
+        _back.move(SHIZ_CANVAS_COLUMNS - 32, SHIZ_CANVAS_ROWS - 3);
         _back.draw();
     }
     else
