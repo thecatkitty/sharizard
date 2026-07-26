@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "deps-lavender.h"
 #include "deps-windows.h"
 #include <sharizard.h>
 
@@ -994,9 +993,10 @@ _find_bang(void)
 }
 
 bool
-shiz_enter(shiz_page *pages, int count)
+shiz_enter(const shiz_wizard *wizard)
 {
-    int i;
+    int         i, length;
+    const char *line_end;
 
     _nclm.cbSize = sizeof(_nclm);
     if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(_nclm), &_nclm,
@@ -1006,28 +1006,32 @@ shiz_enter(shiz_page *pages, int count)
         return false;
     }
 
-    _psps = (PROPSHEETPAGEW *)malloc(sizeof(PROPSHEETPAGEW) * count);
+    _psps = (PROPSHEETPAGEW *)malloc(sizeof(PROPSHEETPAGEW) * wizard->npages);
     if (NULL == _psps)
     {
         return false;
     }
 
-    _hpsps = (HPROPSHEETPAGE *)malloc(sizeof(PROPSHEETPAGEW) * count);
+    _hpsps = (HPROPSHEETPAGE *)malloc(sizeof(PROPSHEETPAGEW) * wizard->npages);
     if (NULL == _hpsps)
     {
         free(_psps);
         return false;
     }
 
-    if (0 == _brand[0])
+    line_end = strchr(wizard->brand_text, '\n');
+    length =
+        MultiByteToWideChar(CP_UTF8, 0, wizard->brand_text,
+                            line_end ? (line_end - wizard->brand_text) : -1,
+                            _brand, lengthof(_brand) - 1);
+    if (line_end)
     {
-        MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, _brand,
-                            lengthof(_brand));
+        _brand[(length <= 0) ? 0 : length] = L'\0';
     }
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < wizard->npages; i++)
     {
-        if (0 == pages[i].title)
+        if (0 == wizard->pages[i].title)
         {
             _psps[i].dwSize = sizeof(PROPSHEETPAGEW);
             _psps[i].hInstance = GetModuleHandleW(NULL);
@@ -1045,7 +1049,7 @@ shiz_enter(shiz_page *pages, int count)
         _psps[i].hInstance = GetModuleHandleW(NULL);
         _psps[i].dwFlags = PSP_USEHEADERTITLE | PSP_USETITLE;
         _psps[i].lParam = (LPARAM)i;
-        _psps[i].pszHeaderTitle = MAKEINTRESOURCEW(pages[i].title);
+        _psps[i].pszHeaderTitle = MAKEINTRESOURCEW(wizard->pages[i].title);
         _psps[i].pszTemplate = MAKEINTRESOURCEW(IDD_PROMPT);
         _psps[i].pszTitle = _brand;
         _psps[i].pfnDlgProc = _dialog_proc;
@@ -1062,9 +1066,9 @@ shiz_enter(shiz_page *pages, int count)
     _psh.pszIcon = MAKEINTRESOURCEW(1);
     _psh.pszbmHeader = MAKEINTRESOURCEW(IDB_HEADER);
     _psh.nStartPage = 0;
-    _psh.nPages = count;
+    _psh.nPages = wizard->npages;
 
-    _pages = pages;
+    _pages = wizard->pages;
     _id = -1;
 
     _bang = _find_bang();

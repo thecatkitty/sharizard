@@ -16,7 +16,7 @@ int
 shiz_canvas_print(int top, char *text);
 
 void
-shiz_canvas_init_frame(void);
+shiz_canvas_init_frame(const shiz_wizard *wizard);
 
 void
 shiz_canvas_enter_page(shiz_page *pages, int id);

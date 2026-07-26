@@ -36,7 +36,7 @@ static shiz_page *_page;
 std::unique_ptr<canvas::panel> panel_{};
 
 void
-shiz_canvas_init_frame(void)
+shiz_canvas_init_frame(const shiz_wizard *wizard)
 {
     shizd_get_viewbox_size(nullptr, &_screen);
     shizd_get_cell_size(nullptr, &_glyph);
@@ -44,9 +44,27 @@ shiz_canvas_init_frame(void)
     auto bar = shiz_vec2i{_screen.x, 3 * _glyph.y + 1};
     shizd_fill_rectangle(nullptr, 0, _screen.y - bar.y, &bar, SHIZ_COLOR_BLACK);
 
-    shizd_draw_text(nullptr, 1, 22, pal_get_version_string());
-    shizd_draw_text(nullptr, 1, 23, "https://celones.pl/lavender");
-    shizd_draw_text(nullptr, 1, 24, "(C) 2021-2026 Mateusz Karcz");
+    auto brand = wizard->brand_text;
+    for (int y = 22; y <= 24; ++y)
+    {
+        char line[TEXT_WIDTH / 2 + 1];
+        auto line_end = strchr(brand, '\n');
+        auto available =
+            line_end ? static_cast<size_t>(line_end - brand) : strlen(brand);
+        auto line_length = std::min(available, sizeof(line) - 1);
+        memcpy(line, brand, line_length);
+        line[line_length] = '\0';
+        shizd_draw_text(nullptr, 1, y, line);
+
+        if (line_end)
+        {
+            brand = line_end + 1;
+        }
+        else
+        {
+            break;
+        }
+    }
 
     _next.move(SHIZ_CANVAS_COLUMNS - 22, SHIZ_CANVAS_ROWS - 3);
     _cancel.move(SHIZ_CANVAS_COLUMNS - 11, SHIZ_CANVAS_ROWS - 3);

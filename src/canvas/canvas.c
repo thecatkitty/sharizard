@@ -23,15 +23,15 @@ static bool _notify = false;
 static int  _cookie;
 
 bool
-shiz_enter(shiz_page *pages, int count)
+shiz_enter(const shiz_wizard *wizard)
 {
     if (STATE_NONE != _state)
     {
         return false;
     }
 
-    shiz_canvas_init_frame();
-    _pages = pages;
+    shiz_canvas_init_frame(wizard);
+    _pages = wizard->pages;
     _id = -1;
     return true;
 }

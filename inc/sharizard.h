@@ -70,8 +70,18 @@ typedef struct
     shiz_field     *fields;
 } shiz_page;
 
+/**
+ * Wizard definition.
+ */
+typedef struct
+{
+    shiz_page  *pages;      //!< Wizard pages.
+    unsigned    npages;     //!< Number of pages.
+    const char *brand_text; //!< Branding text; lines are separated by LF.
+} shiz_wizard;
+
 extern bool
-shiz_enter(shiz_page *pages, int count);
+shiz_enter(const shiz_wizard *wizard);
 
 extern bool
 shiz_exit(void);

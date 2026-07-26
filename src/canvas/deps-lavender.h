@@ -1,10 +1,6 @@
 #ifndef CANVAS_DEPS_LAVENDER_H
 #define CANVAS_DEPS_LAVENDER_H
 
-#include <sharizard/base.h>
-
-#include "../deps-lavender.h"
-
 #define CONFIG_SHIZ_CHECKBOX_MARK_CHARACTER "x"
 #define CONFIG_SHIZ_RADIO_FIELD_CHARACTER   "○"
 #if defined(HAVE_GFX_CHARSET)
