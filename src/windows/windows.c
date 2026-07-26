@@ -11,10 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "deps-windows.h"
 #include <sharizard.h>
 
 #include "resource.h"
+#include "winutils.h"
 
 #define lengthof(x) (sizeof(x) / sizeof((x)[0]))
 
