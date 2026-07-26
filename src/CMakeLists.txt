@@ -1,4 +1,4 @@
-target_sources(enc PRIVATE common.c)
+target_sources(sharizard PRIVATE common.c)
 if(WIN32)
     add_subdirectory(windows)
 else()
