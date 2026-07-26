@@ -63,6 +63,6 @@ checkbox::mark(bool checked)
     if (checked)
     {
         shizd_draw_text(nullptr, pos.x + 1, pos.y,
-                        CONFIG_SHIZ_CHECKBOX_MARK_CHARACTER);
+                        SHIZ_CANVAS_CHECKBOX_MARK_CHARACTER);
     }
 }

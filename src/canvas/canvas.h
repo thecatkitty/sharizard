@@ -1,11 +1,18 @@
 #ifndef CANVAS_CANVAS_H
 #define CANVAS_CANVAS_H
 
-#include "deps-lavender.h"
 #include <sharizard.h>
 
 #define SHIZ_CANVAS_COLUMNS 80 //!< Text grid width.
 #define SHIZ_CANVAS_ROWS    25 //!< Text grid height.
+
+#define SHIZ_CANVAS_CHECKBOX_MARK_CHARACTER "x"
+#define SHIZ_CANVAS_RADIO_FIELD_CHARACTER   "○"
+#if defined(__ia16__)
+#define SHIZ_CANVAS_RADIO_MARK_CHARACTER "•" // IBM Graphics 0x07
+#else
+#define SHIZ_CANVAS_RADIO_MARK_CHARACTER "x"
+#endif
 
 #define TEXT_WIDTH (SHIZ_CANVAS_COLUMNS - 2)
 

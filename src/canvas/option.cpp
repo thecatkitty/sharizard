@@ -73,11 +73,11 @@ option::mark(bool checked)
                          &glyph, SHIZ_COLOR_WHITE);
 
     char buff[4];
-    strcpy(buff, CONFIG_SHIZ_RADIO_FIELD_CHARACTER);
+    strcpy(buff, SHIZ_CANVAS_RADIO_FIELD_CHARACTER);
     shizd_draw_text(nullptr, pos.x + 1, pos.y, buff);
     if (checked)
     {
-        strcpy(buff, CONFIG_SHIZ_RADIO_MARK_CHARACTER);
+        strcpy(buff, SHIZ_CANVAS_RADIO_MARK_CHARACTER);
         shizd_draw_text(nullptr, pos.x + 1, pos.y, buff);
     }
 }
