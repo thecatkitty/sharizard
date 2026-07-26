@@ -6,6 +6,21 @@ else()
     project(Sharizard C CXX)
 endif()
 
+
+include(CheckIncludeFile)
+
+
+function(supply_compat_header name)
+    check_include_file(${name}.h has_compat_header)
+    if(NOT has_compat_header)
+        include_directories(inc/compat/${name})
+    endif()
+endfunction()
+
+supply_compat_header(stdbool)
+supply_compat_header(stdint)
+
+
 add_library(sharizard STATIC)
 target_include_directories(sharizard PRIVATE inc)
 
