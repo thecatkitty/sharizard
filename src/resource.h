@@ -14,8 +14,4 @@
 
 #define IDB_HEADER SHIZ_WINRES(1)
 
-#define IDS_CANCEL SHIZ_WINRES(1)
-#define IDS_BACK   SHIZ_WINRES(2)
-#define IDS_NEXT   SHIZ_WINRES(3)
-
 #endif // RESOURCE_H

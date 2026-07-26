@@ -5,11 +5,11 @@
 #include <vector>
 
 #include <sharizard/drawing.h>
+#include <sharizard/host.h>
 #include <sharizard/input.h>
 
 extern "C"
 {
-#include "../resource.h"
 #include "canvas.h"
 }
 
@@ -22,9 +22,9 @@ static shiz_vec2i _glyph = {0, 0};
 static shiz_vec2i _screen = {0, 0};
 
 // Buttons
-static shiz_field     _cancel_field{0, SHIZFF_STATIC, IDS_CANCEL};
-static shiz_field     _back_field{0, SHIZFF_STATIC, IDS_BACK};
-static shiz_field     _next_field{0, SHIZFF_STATIC, IDS_NEXT};
+static shiz_field     _cancel_field{0, SHIZFF_STATIC, SHIZSID_CANCEL};
+static shiz_field     _back_field{0, SHIZFF_STATIC, SHIZSID_BACK};
+static shiz_field     _next_field{0, SHIZFF_STATIC, SHIZSID_NEXT};
 static canvas::button _cancel{_cancel_field};
 static canvas::button _back{_back_field};
 static canvas::button _next{_next_field};
@@ -173,7 +173,7 @@ shiz_canvas_enter_page(shiz_page *pages, int id)
 
     char buffer[SHIZ_CANVAS_COLUMNS * 2];
     _draw_background();
-    pal_load_string(_page->title, buffer, sizeof(buffer));
+    shizh_load_string(nullptr, _page->title, buffer, sizeof(buffer));
     _draw_title(buffer);
     _create_controls(_page);
 

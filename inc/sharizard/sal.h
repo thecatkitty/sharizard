@@ -12,6 +12,7 @@
 #define _In_z_
 
 #define _Out_
+#define _Out_writes_opt_z_(s)
 
 #define _Success_(x)
 

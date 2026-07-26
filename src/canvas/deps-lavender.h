@@ -16,7 +16,4 @@
 extern void
 pal_enable_mouse(void);
 
-extern int
-pal_load_string(unsigned id, char *buffer, int max_length);
-
 #endif // CANVAS_DEPS_LAVENDER_H

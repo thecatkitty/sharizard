@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sharizard/host.h>
 #include <sharizard/input.h>
 
 #include "canvas.h"
@@ -97,7 +98,7 @@ shiz_handle(void)
         }
         else
         {
-            pal_load_string(status, message, sizeof(message));
+            shizh_load_string(NULL, status, message, sizeof(message));
         }
         shiz_canvas_set_error(message);
 

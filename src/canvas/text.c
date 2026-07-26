@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include <sharizard/drawing.h>
+#include <sharizard/host.h>
 
 #include "canvas.h"
 
@@ -124,7 +125,7 @@ shiz_canvas_load_string(shiz_field *field, char *buff, size_t length)
     }
     else
     {
-        pal_load_string(field->data, buff, length);
+        shizh_load_string(NULL, field->data, buff, length);
     }
 }
 

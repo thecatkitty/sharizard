@@ -1,6 +1,7 @@
 #include <cstring>
 
 #include <sharizard/drawing.h>
+#include <sharizard/host.h>
 
 #include "widgets.hpp"
 
@@ -40,7 +41,7 @@ label::draw()
     }
     else
     {
-        pal_load_string(field_.data, buffer, sizeof(buffer));
+        shizh_load_string(nullptr, field_.data, buffer, sizeof(buffer));
     }
 
     if (SHIZFF_FOOTER & field_.flags)
