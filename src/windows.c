@@ -68,6 +68,23 @@ typedef HRESULT(STDAPICALLTYPE *pf_shgetstockiconinfo)(UINT,
 
 #define IDT_ENTERED 1
 
+static const RGBQUAD IRGB1111[] = {/* BLACK */ {0, 0, 0},
+                                   /* NAVY */ {128, 0, 0},
+                                   /* GREEN */ {0, 128, 0},
+                                   /* TEAL */ {128, 128, 0},
+                                   /* MAROON */ {0, 0, 128},
+                                   /* PURPLE */ {128, 0, 128},
+                                   /* OLIVE */ {0, 128, 128},
+                                   /* SILVER */ {192, 192, 192},
+                                   /* GRAY */ {128, 128, 128},
+                                   /* BLUE */ {255, 0, 0},
+                                   /* LIME */ {0, 255, 0},
+                                   /* CYAN */ {255, 255, 0},
+                                   /* RED */ {0, 0, 255},
+                                   /* FUCHSIA */ {255, 0, 255},
+                                   /* YELLOW */ {0, 255, 255},
+                                   /* WHITE */ {255, 255, 255}};
+
 static NONCLIENTMETRICSW _nclm = {0};
 static HICON             _bang = NULL;
 
@@ -277,7 +294,7 @@ _has_syslink(void)
 }
 
 static void
-_get_scaled_dimensions(shiz_bitmap *bm, int *width, int *height)
+_get_scaled_dimensions(const shiz_bitmap *bm, int *width, int *height)
 {
     HDC   dc = GetDC(NULL);
     float scale = (float)GetDeviceCaps(dc, LOGPIXELSX) / 96.f;
@@ -287,8 +304,60 @@ _get_scaled_dimensions(shiz_bitmap *bm, int *width, int *height)
     *height = bm->size.y * scale;
 }
 
+static HBITMAP
+_create_dib(HDC dc, const shiz_bitmap *bm)
+{
+    HBITMAP     bmp = NULL;
+    BITMAPINFO *bmi =
+        (BITMAPINFO *)calloc(1, sizeof(BITMAPINFOHEADER) + sizeof(IRGB1111));
+    if (NULL == bmi)
+    {
+        return NULL;
+    }
+
+    bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi->bmiHeader.biWidth = bm->size.x;
+    bmi->bmiHeader.biHeight = -bm->size.y;
+    bmi->bmiHeader.biPlanes = 1;
+    bmi->bmiHeader.biCompression = BI_RGB;
+
+    // Configure bitmap format
+    switch (bm->format)
+    {
+    case SHIZ_PXFORMAT_MONO1:
+        // Initialize the palette for 1bpp bitmaps
+        bmi->bmiColors[1].rgbRed = 255;
+        bmi->bmiColors[1].rgbGreen = 255;
+        bmi->bmiColors[1].rgbBlue = 255;
+        bmi->bmiHeader.biBitCount = 1;
+        break;
+
+    case SHIZ_PXFORMAT_IRGB1111:
+        // Initialize the palette for 4bpp bitmaps
+        memcpy(bmi->bmiColors, IRGB1111, sizeof(IRGB1111));
+        bmi->bmiHeader.biBitCount = 4;
+        break;
+
+    case SHIZ_PXFORMAT_RGB888:
+        bmi->bmiHeader.biBitCount = 24;
+        break;
+
+    default:
+        free(bmi);
+        return NULL;
+    }
+
+    bmp = CreateDIBitmap(dc, &bmi->bmiHeader, CBM_INIT, bm->pixels, bmi,
+                         DIB_RGB_COLORS);
+    free(bmi);
+    return bmp;
+}
+
 static void
-_set_scaled_bitmap(HWND ctl, shiz_bitmap *bm, int new_width, int new_height)
+_set_scaled_bitmap(HWND               ctl,
+                   const shiz_bitmap *bm,
+                   int                new_width,
+                   int                new_height)
 {
     HBITMAP bmp, old_src_bmp, old_dst_bmp, new_bmp;
     HDC     src_dc, dst_dc;
@@ -296,7 +365,7 @@ _set_scaled_bitmap(HWND ctl, shiz_bitmap *bm, int new_width, int new_height)
     src_dc = CreateCompatibleDC(NULL);
     dst_dc = CreateCompatibleDC(NULL);
 
-    bmp = windows_create_dib(src_dc, bm);
+    bmp = _create_dib(src_dc, bm);
     old_src_bmp = (HBITMAP)SelectObject(src_dc, bmp);
     new_bmp = CreateCompatibleBitmap(src_dc, new_width, new_height);
     old_dst_bmp = (HBITMAP)SelectObject(dst_dc, new_bmp);
@@ -498,10 +567,10 @@ _create_controls(HWND dlg, shiz_page *page)
 
         if (SHIZFT_BITMAP == field->type)
         {
-            shiz_bitmap *bm = (shiz_bitmap *)field->data;
-            DWORD        style = WS_VISIBLE | WS_CHILD | SS_BITMAP;
-            HWND         ctl;
-            int          left = 0, width, height;
+            const shiz_bitmap *bm = (shiz_bitmap *)field->data;
+            DWORD              style = WS_VISIBLE | WS_CHILD | SS_BITMAP;
+            HWND               ctl;
+            int                left = 0, width, height;
 
             _get_scaled_dimensions(bm, &width, &height);
             if (SHIZFF_CENTER == (SHIZFF_ALIGN & field->flags))

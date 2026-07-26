@@ -6,9 +6,6 @@
 
 #include <sharizard/base.h>
 
-extern HBITMAP
-windows_create_dib(HDC dc, shiz_bitmap *bm);
-
 #if defined(_MSC_VER) && (_MSC_VER < 1800)
 #define inline __inline
 #endif
