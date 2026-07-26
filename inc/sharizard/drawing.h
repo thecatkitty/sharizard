@@ -111,6 +111,27 @@ shizd_draw_text(_In_opt_ void     *ctx,
                 unsigned           y,
                 _In_z_ const char *str);
 
+/**
+ * Prevents the host from modifying the drawing surface.
+ *
+ * @param[in] ctx Drawing context.
+ *
+ * @return Lock handle on success. Negative on error.
+ */
+extern shizerr
+shizd_lock_surface(_In_opt_ void *ctx);
+
+/**
+ * Releases a drawing-surface lock.
+ *
+ * @param[in] ctx  Drawing context.
+ * @param[in] lock Lock handle returned by shizd_lock_surface().
+ *
+ * @return Negative on error.
+ */
+extern shizerr
+shizd_unlock_surface(_In_opt_ void *ctx, int lock);
+
 SHIZ_EXTERNC_END
 
 #endif // SHARIZARD_DRAWING_H

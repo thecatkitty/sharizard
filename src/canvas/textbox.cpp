@@ -40,7 +40,7 @@ enum
 
 textbox::textbox(shiz_field &field)
     : widget{field}, blink_start_{}, caret_period_{}, caret_counter_{},
-      caret_visible_{true}, caret_position_{}, state_{STATE_PROMPT}
+      caret_visible_{true}, caret_position_{}, lock_{}, state_{STATE_PROMPT}
 {
     auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field.data);
     if (0 == textbox.length)
@@ -85,6 +85,7 @@ textbox::animate(bool valid)
 {
     if (!valid && (STATE_PROMPT == state_))
     {
+        lock_ = shizd_lock_surface(nullptr);
         state_ = STATE_INVALID1;
         blink_start_ = shizh_get_clock(nullptr);
         return false;
@@ -124,7 +125,8 @@ textbox::animate(bool valid)
                                  &field.second, SHIZ_COLOR_GRAY);
             draw();
             state_ = STATE_PROMPT;
-            pal_enable_mouse();
+            shizd_unlock_surface(nullptr, lock_);
+            lock_ = 0;
         }
 
         return false;
@@ -132,12 +134,14 @@ textbox::animate(bool valid)
 
     if (shizh_get_clock(nullptr) > caret_counter_ + caret_period_)
     {
+        auto lock = shizd_lock_surface(nullptr);
         auto pos = get_absolute_position();
         auto caret = get_caret(pos.x, pos.y, caret_position_);
         shizd_draw_line(nullptr, caret.first.x, caret.first.y, &caret.second,
                         caret_visible_ ? SHIZ_COLOR_BLACK : SHIZ_COLOR_WHITE);
         caret_counter_ = shizh_get_clock(nullptr);
         caret_visible_ = !caret_visible_;
+        shizd_unlock_surface(nullptr, lock);
     }
 
     return true;
@@ -170,10 +174,10 @@ textbox::click(int x, int y)
     int cursor = std::max(0, std::min(int(textbox.length), x - 1));
     if (caret_position_ != cursor)
     {
+        auto lock = shizd_lock_surface(nullptr);
         caret_position_ = cursor;
-        pal_disable_mouse();
         draw();
-        pal_enable_mouse();
+        shizd_unlock_surface(nullptr, lock);
     }
 
     return 0;
@@ -184,7 +188,7 @@ textbox::key(int scancode)
 {
     auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field_.data);
 
-    pal_disable_mouse();
+    auto lock = shizd_lock_surface(nullptr);
 
     shiz_vec2i glyph;
     shizd_get_cell_size(nullptr, &glyph);
@@ -245,6 +249,6 @@ textbox::key(int scancode)
     caret = get_caret(pos.x, pos.y, caret_position_);
     shizd_draw_line(nullptr, caret.first.x, caret.first.y, &caret.second,
                     SHIZ_COLOR_BLACK);
-    pal_enable_mouse();
+    shizd_unlock_surface(nullptr, lock);
     return 0;
 }

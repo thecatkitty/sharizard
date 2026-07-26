@@ -241,6 +241,7 @@ struct textbox : widget
     uint32_t caret_counter_;
     bool     caret_visible_;
     int      caret_position_;
+    int      lock_;
     int      state_;
 };
 

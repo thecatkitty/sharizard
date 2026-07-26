@@ -172,6 +172,7 @@ shiz_canvas_enter_page(shiz_page *pages, int id)
     _page->proc(SHIZM_INIT, NULL, _page->data);
 
     char buffer[SHIZ_CANVAS_COLUMNS * 2];
+    auto lock = shizd_lock_surface(nullptr);
     _draw_background();
     shizh_load_string(nullptr, _page->title, buffer, sizeof(buffer));
     _draw_title(buffer);
@@ -191,7 +192,7 @@ shiz_canvas_enter_page(shiz_page *pages, int id)
     _cancel.draw();
 
     _page->proc(SHIZM_ENTERED, NULL, _page->data);
-    pal_enable_mouse();
+    shizd_unlock_surface(nullptr, lock);
 }
 
 int
@@ -251,7 +252,6 @@ shiz_canvas_key(uint16_t scancode)
             return SHIZ_OK;
         }
 
-        pal_disable_mouse();
         shiz_canvas_animate(false);
         return SHIZ_INCOMPLETE;
     }
