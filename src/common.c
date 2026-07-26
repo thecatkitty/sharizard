@@ -1,7 +1,7 @@
-#include "encui.h"
+#include <sharizard.h>
 
-static encui_field *
-_find_field_by_type(encui_page *page, int type)
+static shiz_field *
+_find_field_by_type(shiz_page *page, int type)
 {
     int i;
     for (i = 0; i < page->length; i++)
@@ -15,15 +15,15 @@ _find_field_by_type(encui_page *page, int type)
     return NULL;
 }
 
-encui_field *
-encui_find_checkbox(encui_page *page)
+shiz_field *
+shiz_find_checkbox(shiz_page *page)
 {
-    return _find_field_by_type(page, ENCUIFT_CHECKBOX);
+    return _find_field_by_type(page, SHIZFT_CHECKBOX);
 }
 
-encui_textbox_data *
-encui_find_textbox(encui_page *page)
+shiz_textbox_data *
+shiz_find_textbox(shiz_page *page)
 {
-    encui_field *field = _find_field_by_type(page, ENCUIFT_TEXTBOX);
-    return field ? (encui_textbox_data *)field->data : NULL;
+    shiz_field *field = _find_field_by_type(page, SHIZFT_TEXTBOX);
+    return field ? (shiz_textbox_data *)field->data : NULL;
 }

@@ -1,21 +1,27 @@
-#ifndef DEPS_WINDOWS_H
-#define DEPS_WINDOWS_H
+#ifndef WINDOWS_WINUTILS_H
+#define WINDOWS_WINUTILS_H
 
-#define UNICODE
 #include <windows.h>
 
-extern HWND
-windows_get_hwnd(void);
-
-extern HBITMAP
-windows_create_dib(HDC dc, gfx_bitmap *bm);
-
-extern uint16_t
-windows_get_version(void);
+#include <sharizard/base.h>
 
 #if defined(_MSC_VER) && (_MSC_VER < 1800)
 #define inline __inline
 #endif
+
+inline static uint16_t
+windows_get_version(void)
+{
+#if defined(_MSC_VER) && (_MSC_VER >= 1900)
+#pragma warning(push)
+#pragma warning(disable : 28159)
+#endif
+    WORD version = LOWORD(GetVersion());
+#if defined(_MSC_VER) && (_MSC_VER >= 1900)
+#pragma warning(pop)
+#endif
+    return (LOBYTE(version) << 8) | HIBYTE(version);
+}
 
 inline static bool
 windows_is_at_least(uint16_t ver)
@@ -42,11 +48,7 @@ windows_get_proc(const char *module, const char *name)
 #define winver_and_windows_is_less_than(ver)                                   \
     ((WINVER < (ver)) && windows_is_less_than((ver)))
 
-#define windows_is_at_least_xp()    winver_or_windows_is_at_least(0x0501)
-#define windows_is_at_least_vista() winver_or_windows_is_at_least(0x0600)
-#define windows_is_at_least_7()     winver_or_windows_is_at_least(0x0601)
-
-#define windows_is_less_than_98()   winver_and_windows_is_less_than(0x040A)
 #define windows_is_less_than_2000() winver_and_windows_is_less_than(0x0500)
+#define windows_is_at_least_vista() winver_or_windows_is_at_least(0x0600)
 
-#endif // DEPS_WINDOWS_H
+#endif // WINDOWS_WINUTILS_H

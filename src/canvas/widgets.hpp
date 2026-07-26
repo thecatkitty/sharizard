@@ -3,44 +3,43 @@
 #include <memory>
 #include <vector>
 
+#include <sharizard/base.h>
+
 extern "C"
 {
-#include "direct.h"
+#include "canvas.h"
 }
 
-namespace ui
+namespace shiz
+{
+namespace canvas
 {
 
-extern encui_field null_field;
-
-inline int
-get_bottom(gfx_rect rect)
-{
-    return rect.top + rect.height;
-}
+extern shiz_field null_field;
 
 struct widget
 {
     widget(const widget &) = delete;
     virtual ~widget() = default;
 
-    widget(const encui_page &page)
-        : page_{&page}, field_{null_field}, rect_{}, parent_{nullptr}
+    widget(const shiz_page &page)
+        : page_{&page}, field_{null_field}, position_{}, size_{},
+          parent_{nullptr}
     {
     }
 
-    widget(encui_field &field)
-        : page_{}, field_{field}, rect_{}, parent_{nullptr}
+    widget(shiz_field &field)
+        : page_{}, field_{field}, position_{}, size_{}, parent_{nullptr}
     {
     }
 
-    encui_field
+    shiz_field
     get_model() const
     {
         return field_;
     }
 
-    const encui_page *
+    const shiz_page *
     get_page() const
     {
         return parent_ ? parent_->get_page() : page_;
@@ -49,23 +48,27 @@ struct widget
     void
     move(int left, int top)
     {
-        rect_.left = left;
-        rect_.top = top;
+        position_ = shiz_vec2i{left, top};
     }
 
-    const gfx_rect &
-    get_area() const
+    shiz_vec2i
+    get_absolute_position() const
     {
-        return rect_;
+        return parent_ ? shiz_vec2i{parent_->position_.x + position_.x,
+                                    parent_->position_.y + position_.y}
+                       : position_;
     }
 
-    gfx_rect
+    shiz_vec2i
     get_position() const
     {
-        return parent_ ? gfx_rect{parent_->rect_.left + rect_.left,
-                                  parent_->rect_.top + rect_.top, rect_.width,
-                                  rect_.height}
-                       : rect_;
+        return position_;
+    }
+
+    shiz_vec2i
+    get_size() const
+    {
+        return size_;
     }
 
     void
@@ -92,17 +95,18 @@ struct widget
     }
 
   protected:
-    const encui_page *page_;
-    encui_field      &field_;
-    gfx_rect          rect_;
-    widget           *parent_;
+    const shiz_page *page_;
+    shiz_field      &field_;
+    shiz_vec2i       position_;
+    shiz_vec2i       size_;
+    widget          *parent_;
 };
 
 using widget_ptr = std::unique_ptr<widget>;
 
 struct bitmap : widget
 {
-    bitmap(encui_field &field);
+    bitmap(shiz_field &field);
 
     void
     draw() override;
@@ -110,7 +114,7 @@ struct bitmap : widget
 
 struct button : widget
 {
-    button(encui_field &field);
+    button(shiz_field &field);
 
     void
     draw() override;
@@ -121,7 +125,7 @@ struct button : widget
 
 struct checkbox : widget
 {
-    checkbox(encui_field &field);
+    checkbox(shiz_field &field);
 
     void
     draw() override;
@@ -133,12 +137,13 @@ struct checkbox : widget
     void
     mark(bool checked);
 
-    gfx_rect box_;
+    shiz_vec2i box_position_;
+    shiz_vec2i box_size_;
 };
 
 struct label : widget
 {
-    label(encui_field &field) : widget{field}
+    label(shiz_field &field) : widget{field}
     {
     }
 
@@ -151,7 +156,7 @@ struct label : widget
 
 struct option : widget
 {
-    option(encui_field &field);
+    option(shiz_field &field);
 
     void
     draw() override;
@@ -169,7 +174,7 @@ struct option : widget
 
 struct panel : widget
 {
-    panel(const encui_page &page) : widget{page}, children_{}
+    panel(const shiz_page &page) : widget{page}, children_{}
     {
     }
 
@@ -213,7 +218,7 @@ struct panel : widget
 
 struct textbox : widget
 {
-    textbox(encui_field &field);
+    textbox(shiz_field &field);
 
     void
     draw() override;
@@ -235,32 +240,33 @@ struct textbox : widget
     uint32_t caret_period_;
     uint32_t caret_counter_;
     bool     caret_visible_;
-    int      position_;
+    int      caret_position_;
+    int      lock_;
     int      state_;
 };
 
 template <typename T> struct field_type
 {
-    static const int type = ENCUIFT_SEPARATOR;
+    static const int type = SHIZFT_SEPARATOR;
 };
 template <> struct field_type<checkbox>
 {
-    static const int type = ENCUIFT_CHECKBOX;
+    static const int type = SHIZFT_CHECKBOX;
 };
 
 template <> struct field_type<label>
 {
-    static const int type = ENCUIFT_LABEL;
+    static const int type = SHIZFT_LABEL;
 };
 
 template <> struct field_type<option>
 {
-    static const int type = ENCUIFT_OPTION;
+    static const int type = SHIZFT_OPTION;
 };
 
 template <> struct field_type<textbox>
 {
-    static const int type = ENCUIFT_TEXTBOX;
+    static const int type = SHIZFT_TEXTBOX;
 };
 
 template <typename T>
@@ -271,4 +277,5 @@ get_child(panel &panel, size_t nth = 0)
     return (panel.end() == it) ? nullptr : reinterpret_cast<T *>(it->get());
 }
 
-} // namespace ui
+} // namespace canvas
+} // namespace shiz

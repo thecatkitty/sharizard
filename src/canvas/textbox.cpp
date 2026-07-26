@@ -1,0 +1,254 @@
+#include <algorithm>
+#include <cstring>
+#include <tuple>
+
+#include <sharizard/drawing.h>
+#include <sharizard/host.h>
+#include <sharizard/input.h>
+
+#include "widgets.hpp"
+
+using namespace shiz::canvas;
+
+namespace
+{
+std::pair<shiz_vec2i, shiz_vec2i>
+get_caret(int x, int y, int position)
+{
+    shiz_vec2i glyph;
+    shizd_get_cell_size(nullptr, &glyph);
+    return {{(x + position + 1) * glyph.x, (y + 1) * glyph.y}, {1, glyph.y}};
+}
+
+std::pair<shiz_vec2i, shiz_vec2i>
+get_field(int x, int y, shiz_vec2i size)
+{
+    shiz_vec2i glyph;
+    shizd_get_cell_size(nullptr, &glyph);
+    return {{x * glyph.x, (y + 1) * glyph.y - (glyph.x / 2)},
+            {size.x * glyph.x, glyph.y + glyph.x}};
+}
+} // namespace
+
+enum
+{
+    STATE_PROMPT,
+    STATE_INVALID1,
+    STATE_INVALID2,
+    STATE_INVALID3,
+};
+
+textbox::textbox(shiz_field &field)
+    : widget{field}, blink_start_{}, caret_period_{}, caret_counter_{},
+      caret_visible_{true}, caret_position_{}, lock_{}, state_{STATE_PROMPT}
+{
+    auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field.data);
+    if (0 == textbox.length)
+    {
+        textbox.buffer[0] = 0;
+    }
+
+    size_t field_width = SHIZ_CANVAS_COLUMNS / 2 - 1;
+    if (field_width < textbox.capacity)
+    {
+        field_width = textbox.capacity;
+    }
+
+    caret_position_ = textbox.length;
+
+    size_.x = field_width + 2;
+    size_.y = 5;
+}
+
+void
+textbox::draw()
+{
+    auto &page = *get_page();
+    auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field_.data);
+
+    auto pos = get_absolute_position();
+    auto field = get_field(pos.x, pos.y, size_);
+    shizd_draw_rectangle(nullptr, field.first.x, field.first.y, &field.second,
+                         (0 < shiz_check_page(&page, textbox.buffer))
+                             ? SHIZ_COLOR_GRAY
+                             : SHIZ_COLOR_BLACK);
+    shizd_fill_rectangle(nullptr, field.first.x, field.first.y, &field.second,
+                         SHIZ_COLOR_WHITE);
+    shizd_draw_text(nullptr, position_.x + 1, position_.y + 1, textbox.buffer);
+
+    caret_period_ = 500;
+    caret_counter_ = shizh_get_clock(nullptr);
+}
+
+bool
+textbox::animate(bool valid)
+{
+    if (!valid && (STATE_PROMPT == state_))
+    {
+        lock_ = shizd_lock_surface(nullptr);
+        state_ = STATE_INVALID1;
+        blink_start_ = shizh_get_clock(nullptr);
+        return false;
+    }
+
+    auto pos = get_absolute_position();
+    auto field = get_field(pos.x, pos.y, size_);
+    if (STATE_INVALID1 == state_)
+    {
+        if (shizh_get_clock(nullptr) > blink_start_ + 63)
+        {
+            shizd_draw_rectangle(nullptr, field.first.x, field.first.y,
+                                 &field.second, SHIZ_COLOR_GRAY);
+            state_ = STATE_INVALID2;
+        }
+
+        return false;
+    }
+
+    if (STATE_INVALID2 == state_)
+    {
+        if (shizh_get_clock(nullptr) > blink_start_ + 126)
+        {
+            shizd_draw_rectangle(nullptr, field.first.x, field.first.y,
+                                 &field.second, SHIZ_COLOR_BLACK);
+            state_ = STATE_INVALID3;
+        }
+
+        return false;
+    }
+
+    if (STATE_INVALID3 == state_)
+    {
+        if (shizh_get_clock(nullptr) > blink_start_ + 189)
+        {
+            shizd_draw_rectangle(nullptr, field.first.x, field.first.y,
+                                 &field.second, SHIZ_COLOR_GRAY);
+            draw();
+            state_ = STATE_PROMPT;
+            shizd_unlock_surface(nullptr, lock_);
+            lock_ = 0;
+        }
+
+        return false;
+    }
+
+    if (shizh_get_clock(nullptr) > caret_counter_ + caret_period_)
+    {
+        auto lock = shizd_lock_surface(nullptr);
+        auto pos = get_absolute_position();
+        auto caret = get_caret(pos.x, pos.y, caret_position_);
+        shizd_draw_line(nullptr, caret.first.x, caret.first.y, &caret.second,
+                        caret_visible_ ? SHIZ_COLOR_BLACK : SHIZ_COLOR_WHITE);
+        caret_counter_ = shizh_get_clock(nullptr);
+        caret_visible_ = !caret_visible_;
+        shizd_unlock_surface(nullptr, lock);
+    }
+
+    return true;
+}
+
+void
+textbox::alert(char *message)
+{
+    shiz_vec2i glyph;
+    shizd_get_cell_size(nullptr, &glyph);
+
+    auto bg = shiz_vec2i{size_.x * glyph.x, 3 * glyph.y};
+    shizd_fill_rectangle(nullptr, 0, (position_.y + 3) * glyph.y, &bg,
+                         SHIZ_COLOR_WHITE);
+
+    auto pos = get_absolute_position();
+    shiz_canvas_print(pos.y + 3, message);
+}
+
+int
+textbox::click(int x, int y)
+{
+    if (2 < y)
+    {
+        return 0;
+    }
+
+    auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field_.data);
+
+    int cursor = std::max(0, std::min(int(textbox.length), x - 1));
+    if (caret_position_ != cursor)
+    {
+        auto lock = shizd_lock_surface(nullptr);
+        caret_position_ = cursor;
+        draw();
+        shizd_unlock_surface(nullptr, lock);
+    }
+
+    return 0;
+}
+
+int
+textbox::key(int scancode)
+{
+    auto &textbox = *reinterpret_cast<shiz_textbox_data *>(field_.data);
+
+    auto lock = shizd_lock_surface(nullptr);
+
+    shiz_vec2i glyph;
+    shizd_get_cell_size(nullptr, &glyph);
+
+    auto pos = get_absolute_position();
+    auto caret = get_caret(pos.x, pos.y, caret_position_);
+    shizd_draw_line(nullptr, caret.first.x, caret.first.y, &caret.second,
+                    SHIZ_COLOR_WHITE);
+
+    if ((SHIZK_LEFT == scancode) && (0 < caret_position_))
+    {
+        caret_position_--;
+        draw();
+    }
+
+    if ((SHIZK_RIGHT == scancode) && (int(textbox.length) > caret_position_))
+    {
+        caret_position_++;
+        draw();
+    }
+
+    if ((SHIZK_BACKSPACE == scancode) && (0 < caret_position_))
+    {
+        std::memmove(textbox.buffer + caret_position_ - 1,
+                     textbox.buffer + caret_position_,
+                     textbox.length - caret_position_);
+        caret_position_--;
+        textbox.length--;
+        textbox.buffer[textbox.length] = 0;
+        draw();
+    }
+
+    if ((SHIZK_DELETE == scancode) && (int(textbox.length) > caret_position_))
+    {
+        std::memmove(textbox.buffer + caret_position_,
+                     textbox.buffer + caret_position_ + 1,
+                     textbox.length - caret_position_ - 1);
+        textbox.length--;
+        textbox.buffer[textbox.length] = 0;
+        draw();
+    }
+
+    if (((SHIZK_KP_MINUS == scancode) ||
+         ((' ' <= scancode) && (SHIZK_DELETE > scancode))) &&
+        (textbox.length < textbox.capacity))
+    {
+        std::memmove(textbox.buffer + caret_position_ + 1,
+                     textbox.buffer + caret_position_,
+                     textbox.length - caret_position_);
+        textbox.buffer[caret_position_] =
+            (SHIZK_KP_MINUS == scancode) ? '-' : (scancode & 0xFF);
+        caret_position_++;
+        textbox.length++;
+        textbox.buffer[textbox.length] = 0;
+        draw();
+    }
+
+    caret = get_caret(pos.x, pos.y, caret_position_);
+    shizd_draw_line(nullptr, caret.first.x, caret.first.y, &caret.second,
+                    SHIZ_COLOR_BLACK);
+    shizd_unlock_surface(nullptr, lock);
+    return 0;
+}

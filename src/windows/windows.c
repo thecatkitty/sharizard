@@ -11,11 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "deps-lavender.h"
-#include "deps-windows.h"
-#include "encui.h"
+#include <sharizard.h>
 
 #include "resource.h"
+#include "winutils.h"
 
 #define lengthof(x) (sizeof(x) / sizeof((x)[0]))
 
@@ -65,15 +64,32 @@ typedef HRESULT(STDAPICALLTYPE *pf_shgetstockiconinfo)(UINT,
 
 #define CPX_CTLID(i) (0x100 + (i))
 
-#define WM_ENCUI_NOTIFY (WM_USER + 1)
+#define WM_SHIZ_NOTIFY (WM_USER + 1)
 
 #define IDT_ENTERED 1
+
+static const RGBQUAD IRGB1111[] = {/* BLACK */ {0, 0, 0},
+                                   /* NAVY */ {128, 0, 0},
+                                   /* GREEN */ {0, 128, 0},
+                                   /* TEAL */ {128, 128, 0},
+                                   /* MAROON */ {0, 0, 128},
+                                   /* PURPLE */ {128, 0, 128},
+                                   /* OLIVE */ {0, 128, 128},
+                                   /* SILVER */ {192, 192, 192},
+                                   /* GRAY */ {128, 128, 128},
+                                   /* BLUE */ {255, 0, 0},
+                                   /* LIME */ {0, 255, 0},
+                                   /* CYAN */ {255, 255, 0},
+                                   /* RED */ {0, 0, 255},
+                                   /* FUCHSIA */ {255, 0, 255},
+                                   /* YELLOW */ {0, 255, 255},
+                                   /* WHITE */ {255, 255, 255}};
 
 static NONCLIENTMETRICSW _nclm = {0};
 static HICON             _bang = NULL;
 
-static encui_page *_pages = NULL;
-static int         _id;
+static shiz_page *_pages = NULL;
+static int        _id;
 
 static WCHAR            _brand[MAX_PATH] = L"";
 static PROPSHEETPAGEW  *_psps = NULL;
@@ -236,7 +252,7 @@ _check_input(HWND dlg, int page_id)
     LPSTR  atext;
     int    status;
 
-    if (-ENOSYS == encui_check_page(_pages + page_id, NULL))
+    if (-ENOSYS == shiz_check_page(_pages + page_id, NULL))
     {
         return true;
     }
@@ -265,7 +281,7 @@ _check_input(HWND dlg, int page_id)
     WideCharToMultiByte(CP_UTF8, 0, text, -1, atext, length, NULL, NULL);
     free(text);
 
-    status = encui_check_page(_pages + page_id, atext);
+    status = shiz_check_page(_pages + page_id, atext);
     free(atext);
     return 0 == status;
 }
@@ -278,18 +294,70 @@ _has_syslink(void)
 }
 
 static void
-_get_scaled_dimensions(gfx_bitmap *bm, int *width, int *height)
+_get_scaled_dimensions(const shiz_bitmap *bm, int *width, int *height)
 {
     HDC   dc = GetDC(NULL);
     float scale = (float)GetDeviceCaps(dc, LOGPIXELSX) / 96.f;
     ReleaseDC(NULL, dc);
 
-    *width = bm->width * scale;
-    *height = bm->height * scale;
+    *width = bm->size.x * scale;
+    *height = bm->size.y * scale;
+}
+
+static HBITMAP
+_create_dib(HDC dc, const shiz_bitmap *bm)
+{
+    HBITMAP     bmp = NULL;
+    BITMAPINFO *bmi =
+        (BITMAPINFO *)calloc(1, sizeof(BITMAPINFOHEADER) + sizeof(IRGB1111));
+    if (NULL == bmi)
+    {
+        return NULL;
+    }
+
+    bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi->bmiHeader.biWidth = bm->size.x;
+    bmi->bmiHeader.biHeight = -bm->size.y;
+    bmi->bmiHeader.biPlanes = 1;
+    bmi->bmiHeader.biCompression = BI_RGB;
+
+    // Configure bitmap format
+    switch (bm->format)
+    {
+    case SHIZ_PXFORMAT_MONO1:
+        // Initialize the palette for 1bpp bitmaps
+        bmi->bmiColors[1].rgbRed = 255;
+        bmi->bmiColors[1].rgbGreen = 255;
+        bmi->bmiColors[1].rgbBlue = 255;
+        bmi->bmiHeader.biBitCount = 1;
+        break;
+
+    case SHIZ_PXFORMAT_IRGB1111:
+        // Initialize the palette for 4bpp bitmaps
+        memcpy(bmi->bmiColors, IRGB1111, sizeof(IRGB1111));
+        bmi->bmiHeader.biBitCount = 4;
+        break;
+
+    case SHIZ_PXFORMAT_RGB888:
+        bmi->bmiHeader.biBitCount = 24;
+        break;
+
+    default:
+        free(bmi);
+        return NULL;
+    }
+
+    bmp = CreateDIBitmap(dc, &bmi->bmiHeader, CBM_INIT, bm->pixels, bmi,
+                         DIB_RGB_COLORS);
+    free(bmi);
+    return bmp;
 }
 
 static void
-_set_scaled_bitmap(HWND ctl, gfx_bitmap *bm, int new_width, int new_height)
+_set_scaled_bitmap(HWND               ctl,
+                   const shiz_bitmap *bm,
+                   int                new_width,
+                   int                new_height)
 {
     HBITMAP bmp, old_src_bmp, old_dst_bmp, new_bmp;
     HDC     src_dc, dst_dc;
@@ -297,13 +365,13 @@ _set_scaled_bitmap(HWND ctl, gfx_bitmap *bm, int new_width, int new_height)
     src_dc = CreateCompatibleDC(NULL);
     dst_dc = CreateCompatibleDC(NULL);
 
-    bmp = windows_create_dib(src_dc, bm);
+    bmp = _create_dib(src_dc, bm);
     old_src_bmp = (HBITMAP)SelectObject(src_dc, bmp);
     new_bmp = CreateCompatibleBitmap(src_dc, new_width, new_height);
     old_dst_bmp = (HBITMAP)SelectObject(dst_dc, new_bmp);
 
-    StretchBlt(dst_dc, 0, 0, new_width, new_height, src_dc, 0, 0, bm->width,
-               bm->height, SRCCOPY);
+    StretchBlt(dst_dc, 0, 0, new_width, new_height, src_dc, 0, 0, bm->size.x,
+               bm->size.y, SRCCOPY);
 
     SelectObject(src_dc, old_src_bmp);
     SelectObject(dst_dc, old_dst_bmp);
@@ -315,7 +383,7 @@ _set_scaled_bitmap(HWND ctl, gfx_bitmap *bm, int new_width, int new_height)
 }
 
 static void
-_create_controls(HWND dlg, encui_page *page)
+_create_controls(HWND dlg, shiz_page *page)
 {
     RECT rect;
     int  cx, cy, my, i;
@@ -333,27 +401,26 @@ _create_controls(HWND dlg, encui_page *page)
 
     for (i = 0; i < page->length; i++)
     {
-        encui_field *field = &page->fields[i];
+        shiz_field *field = &page->fields[i];
 
-        if (ENCUIFT_SEPARATOR == field->type)
+        if (SHIZFT_SEPARATOR == field->type)
         {
             cy += my * field->data;
         }
 
-        if (ENCUIFT_LABEL == field->type)
+        if (SHIZFT_LABEL == field->type)
         {
             HWND ctl;
 
-            if ((ENCUIFF_BODY == (ENCUIFF_POSITION & field->flags)) ||
+            if ((SHIZFF_BODY == (SHIZFF_POSITION & field->flags)) ||
                 !(windows_is_at_least_vista() || _has_syslink()))
             {
                 DWORD style =
                     WS_VISIBLE | WS_CHILD |
-                    (ENCUIFF_CENTER == (ENCUIFF_ALIGN & field->flags)
-                         ? SS_CENTER
-                         : 0) |
-                    (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field->flags) ? SS_RIGHT
-                                                                     : 0);
+                    (SHIZFF_CENTER == (SHIZFF_ALIGN & field->flags) ? SS_CENTER
+                                                                    : 0) |
+                    (SHIZFF_RIGHT == (SHIZFF_ALIGN & field->flags) ? SS_RIGHT
+                                                                   : 0);
                 ctl = CreateWindowW(L"STATIC", L"", style, cx, cy,
                                     rect.right - rect.left, 64, dlg,
                                     (HMENU)(UINT_PTR)CPX_CTLID(i),
@@ -363,8 +430,8 @@ _create_controls(HWND dlg, encui_page *page)
             {
                 DWORD style =
                     WS_VISIBLE | WS_CHILD |
-                    (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field->flags) ? LWS_RIGHT
-                                                                     : 0);
+                    (SHIZFF_RIGHT == (SHIZFF_ALIGN & field->flags) ? LWS_RIGHT
+                                                                   : 0);
                 ctl = CreateWindowW(WC_LINK, L"", style, cx, cy,
                                     rect.right - rect.left, 64, dlg,
                                     (HMENU)(UINT_PTR)CPX_CTLID(i),
@@ -372,7 +439,7 @@ _create_controls(HWND dlg, encui_page *page)
             }
 
             SendMessageW(ctl, WM_SETFONT, (WPARAM)_font, TRUE);
-            if (ENCUIFF_FOOTER == (ENCUIFF_POSITION & field->flags))
+            if (SHIZFF_FOOTER == (SHIZFF_POSITION & field->flags))
             {
                 RECT dlg_rect;
                 int  height = (windows_is_at_least_vista() || _has_syslink())
@@ -388,7 +455,7 @@ _create_controls(HWND dlg, encui_page *page)
             }
         }
 
-        if (ENCUIFT_TEXTBOX == field->type)
+        if (SHIZFT_TEXTBOX == field->type)
         {
             HWND box, ctl;
             RECT box_rect, ctl_rect;
@@ -425,7 +492,7 @@ _create_controls(HWND dlg, encui_page *page)
             cy += ctl_rect.bottom - box_rect.top + my;
         }
 
-        if (ENCUIFT_CHECKBOX == field->type)
+        if (SHIZFT_CHECKBOX == field->type)
         {
             if (has_checkbox)
             {
@@ -434,13 +501,13 @@ _create_controls(HWND dlg, encui_page *page)
 
             has_checkbox = true;
             _set_text(GetDlgItem(dlg, IDC_CHECK), field->data, false);
-            if (ENCUIFF_CHECKED & field->flags)
+            if (SHIZFF_CHECKED & field->flags)
             {
                 Button_SetCheck(GetDlgItem(dlg, IDC_CHECK), BST_CHECKED);
             }
         }
 
-        if (ENCUIFT_OPTION == field->type)
+        if (SHIZFT_OPTION == field->type)
         {
             if (!windows_is_at_least_vista())
             {
@@ -454,7 +521,7 @@ _create_controls(HWND dlg, encui_page *page)
                 has_options = true;
                 SendMessageW(ctl, WM_SETFONT, (WPARAM)_font, TRUE);
                 cy += _set_text(ctl, field->data, true) + my;
-                if (ENCUIFF_CHECKED & field->flags)
+                if (SHIZFF_CHECKED & field->flags)
                 {
                     Button_SetCheck(ctl, BST_CHECKED);
                 }
@@ -463,15 +530,15 @@ _create_controls(HWND dlg, encui_page *page)
             {
                 DWORD style =
                     WS_TABSTOP | WS_VISIBLE | WS_CHILD |
-                    ((ENCUIFF_CHECKED & field->flags) ? BS_DEFCOMMANDLINK
-                                                      : BS_COMMANDLINK);
+                    ((SHIZFF_CHECKED & field->flags) ? BS_DEFCOMMANDLINK
+                                                     : BS_COMMANDLINK);
                 HWND ctl = CreateWindowW(L"BUTTON", L"", style, cx, cy,
                                          rect.right - rect.left, 128, dlg,
                                          (HMENU)(UINT_PTR)CPX_CTLID(i),
                                          GetModuleHandleW(NULL), NULL);
                 SIZE ideal_size = {rect.right - rect.left};
 
-                if (0 == (ENCUIFF_DYNAMIC & field->flags))
+                if (0 == (SHIZFF_DYNAMIC & field->flags))
                 {
                     WCHAR buff[MAX_PATH];
 
@@ -498,19 +565,19 @@ _create_controls(HWND dlg, encui_page *page)
             }
         }
 
-        if (ENCUIFT_BITMAP == field->type)
+        if (SHIZFT_BITMAP == field->type)
         {
-            gfx_bitmap *bm = (gfx_bitmap *)field->data;
-            DWORD       style = WS_VISIBLE | WS_CHILD | SS_BITMAP;
-            HWND        ctl;
-            int         left = 0, width, height;
+            const shiz_bitmap *bm = (shiz_bitmap *)field->data;
+            DWORD              style = WS_VISIBLE | WS_CHILD | SS_BITMAP;
+            HWND               ctl;
+            int                left = 0, width, height;
 
             _get_scaled_dimensions(bm, &width, &height);
-            if (ENCUIFF_CENTER == (ENCUIFF_ALIGN & field->flags))
+            if (SHIZFF_CENTER == (SHIZFF_ALIGN & field->flags))
             {
                 left = (rect.right - rect.left - width) / 2;
             }
-            else if (ENCUIFF_RIGHT == (ENCUIFF_ALIGN & field->flags))
+            else if (SHIZFF_RIGHT == (SHIZFF_ALIGN & field->flags))
             {
                 left = rect.right - rect.left - width;
             }
@@ -545,9 +612,9 @@ _set_buttons(HWND dlg, int id, bool has_next)
 }
 
 bool
-encui_refresh_field(encui_page *page, int id)
+shiz_refresh_field(shiz_page *page, int id)
 {
-    encui_field *field = NULL;
+    shiz_field *field = NULL;
 
     if ((_pages + _id) != page)
     {
@@ -560,7 +627,7 @@ encui_refresh_field(encui_page *page, int id)
     }
 
     field = page->fields + id;
-    if (ENCUIFT_LABEL == field->type)
+    if (SHIZFT_LABEL == field->type)
     {
         HWND dlg = PropSheet_GetCurrentPageHwnd(_wnd);
         HWND ctl = GetDlgItem(dlg, CPX_CTLID(id));
@@ -572,38 +639,38 @@ encui_refresh_field(encui_page *page, int id)
 }
 
 bool
-encui_request_notify(int cookie)
+shiz_request_notify(int cookie)
 {
-    return PostMessageW(_active_dlg, WM_ENCUI_NOTIFY, (WPARAM)_id,
+    return PostMessageW(_active_dlg, WM_SHIZ_NOTIFY, (WPARAM)_id,
                         (LPARAM)cookie);
 }
 
 static void
-_update_controls(HWND dlg, encui_page *page)
+_update_controls(HWND dlg, shiz_page *page)
 {
     int i;
     for (i = 0; i < page->length; i++)
     {
-        encui_field *field = &page->fields[i];
+        shiz_field *field = &page->fields[i];
 
-        if ((ENCUIFT_LABEL == field->type) && (ENCUIFF_DYNAMIC & field->flags))
+        if ((SHIZFT_LABEL == field->type) && (SHIZFF_DYNAMIC & field->flags))
         {
             HWND ctl = GetDlgItem(dlg, CPX_CTLID(i));
             _set_text(ctl, field->data, false);
         }
 
-        if ((ENCUIFT_OPTION == field->type) && windows_is_at_least_vista())
+        if ((SHIZFT_OPTION == field->type) && windows_is_at_least_vista())
         {
             _set_buttons(dlg, page - _pages, false);
         }
 
-        if ((ENCUIFT_BITMAP == field->type) && (ENCUIFF_DYNAMIC & field->flags))
+        if ((SHIZFT_BITMAP == field->type) && (SHIZFF_DYNAMIC & field->flags))
         {
             HWND ctl = GetDlgItem(dlg, CPX_CTLID(i));
             int  width, height;
 
-            _get_scaled_dimensions((gfx_bitmap *)field->data, &width, &height);
-            _set_scaled_bitmap(ctl, (gfx_bitmap *)field->data, width, height);
+            _get_scaled_dimensions((shiz_bitmap *)field->data, &width, &height);
+            _set_scaled_bitmap(ctl, (shiz_bitmap *)field->data, width, height);
         }
     }
 }
@@ -615,7 +682,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     {
     case WM_INITDIALOG: {
         PROPSHEETPAGEW *template = (PROPSHEETPAGEW *)lparam;
-        encui_page *page = _pages + template->lParam;
+        shiz_page *page = _pages + template->lParam;
 
         _wnd = GetParent(dlg);
 
@@ -629,7 +696,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 cl_width, cl_height;
 
             // Get window and dialog client and non-client rects
-            GetWindowRect(windows_get_hwnd(), &wnd_rect);
+            GetWindowRect(_psh.hwndParent, &wnd_rect);
             window_width = wnd_rect.right - wnd_rect.left;
             window_height = wnd_rect.bottom - wnd_rect.top;
 
@@ -718,7 +785,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         _active_dlg = dlg;
         _set_text(dlg, page->title, false);
         _create_controls(dlg, page);
-        encui_check_page(page, NULL);
+        shiz_check_page(page, NULL);
 
         return TRUE;
     }
@@ -727,20 +794,20 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         if (IDT_ENTERED == wparam)
         {
             KillTimer(dlg, IDT_ENTERED);
-            _pages[_id].proc(ENCUIM_ENTERED, NULL, _pages[_id].data);
+            _pages[_id].proc(SHIZM_ENTERED, NULL, _pages[_id].data);
         }
 
         return 0;
     }
 
-    case WM_ENCUI_NOTIFY: {
+    case WM_SHIZ_NOTIFY: {
         int id = (int)wparam;
         if (id != PropSheet_HwndToIndex(GetParent(dlg), dlg))
         {
             return 0;
         }
 
-        _pages[id].proc(ENCUIM_NOTIFY, (void *)lparam, _pages[id].data);
+        _pages[id].proc(SHIZM_NOTIFY, (void *)lparam, _pages[id].data);
         return 0;
     }
 
@@ -755,7 +822,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             GetClassNameW(ctl, ctl_cn, lengthof(ctl_cn));
             if (0 == wcsicmp(ctl_cn, L"STATIC"))
             {
-                _pages[_id].proc(ENCUIM_NOTIFY, (void *)(intptr_t)ctl_id,
+                _pages[_id].proc(SHIZM_NOTIFY, (void *)(intptr_t)ctl_id,
                                  _pages[_id].data);
             }
         }
@@ -770,7 +837,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         {
         case PSN_SETACTIVE: {
             _active_dlg = dlg;
-            _pages[id].proc(ENCUIM_INIT, NULL, _pages[id].data);
+            _pages[id].proc(SHIZM_INIT, NULL, _pages[id].data);
             _check_input(dlg, id);
             _update_controls(dlg, _pages + id);
             SetTimer(dlg, IDT_ENTERED, USER_TIMER_MINIMUM, NULL);
@@ -791,13 +858,13 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         }
 
         case PSN_WIZNEXT: {
-            int                 status;
-            encui_textbox_data *textbox;
-            HWND                edit_box = GetDlgItem(dlg, IDC_EDITBOX);
-            size_t              length = GetWindowTextLengthW(edit_box);
-            LPWSTR              text;
+            int                status;
+            shiz_textbox_data *textbox;
+            HWND               edit_box = GetDlgItem(dlg, IDC_EDITBOX);
+            size_t             length = GetWindowTextLengthW(edit_box);
+            LPWSTR             text;
 
-            textbox = encui_find_textbox(_pages + id);
+            textbox = shiz_find_textbox(_pages + id);
             if (NULL != textbox)
             {
                 text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
@@ -813,7 +880,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             }
 
             status = _pages[id].proc(
-                ENCUIM_NEXT, textbox ? textbox->buffer : NULL, _pages[id].data);
+                SHIZM_NEXT, textbox ? textbox->buffer : NULL, _pages[id].data);
             if (0 < status)
             {
                 WCHAR message[MAX_PATH] = L"";
@@ -836,7 +903,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                     int label_id;
                     for (label_id = 0; label_id < _pages[id].length; label_id++)
                     {
-                        if (ENCUIFT_LABEL == _pages[id].fields[label_id].type)
+                        if (SHIZFT_LABEL == _pages[id].fields[label_id].type)
                         {
                             alert = GetDlgItem(dlg, CPX_CTLID(label_id));
                             break;
@@ -886,7 +953,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             int ctl_id = GetDlgCtrlID(notif->hwndFrom);
             if (0x100 <= ctl_id)
             {
-                _pages[id].proc(ENCUIM_NOTIFY, (void *)(intptr_t)ctl_id,
+                _pages[id].proc(SHIZM_NOTIFY, (void *)(intptr_t)ctl_id,
                                 _pages[id].data);
             }
             break;
@@ -907,15 +974,15 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
 
         if ((BN_CLICKED == HIWORD(wparam)) && (IDC_CHECK == LOWORD(wparam)))
         {
-            encui_field *checkbox = encui_find_checkbox(_pages + id);
-            int          state = Button_GetCheck(GetDlgItem(dlg, IDC_CHECK));
+            shiz_field *checkbox = shiz_find_checkbox(_pages + id);
+            int         state = Button_GetCheck(GetDlgItem(dlg, IDC_CHECK));
             if (BST_CHECKED == state)
             {
-                checkbox->flags |= ENCUIFF_CHECKED;
+                checkbox->flags |= SHIZFF_CHECKED;
             }
             else
             {
-                checkbox->flags &= ~ENCUIFF_CHECKED;
+                checkbox->flags &= ~SHIZFF_CHECKED;
             }
             return TRUE;
         }
@@ -929,20 +996,20 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 return FALSE;
             }
 
-            if (ENCUIFT_OPTION != _pages[id].fields[ctl_idx].type)
+            if (SHIZFT_OPTION != _pages[id].fields[ctl_idx].type)
             {
                 return FALSE;
             }
 
             for (i = 0; i < _pages[id].length; i++)
             {
-                if (ENCUIFT_OPTION == _pages[id].fields[i].type)
+                if (SHIZFT_OPTION == _pages[id].fields[i].type)
                 {
-                    _pages[id].fields[i].flags &= ~ENCUIFF_CHECKED;
+                    _pages[id].fields[i].flags &= ~SHIZFF_CHECKED;
                 }
             }
 
-            _pages[id].fields[ctl_idx].flags |= ENCUIFF_CHECKED;
+            _pages[id].fields[ctl_idx].flags |= SHIZFF_CHECKED;
             if (windows_is_at_least_vista())
             {
                 PropSheet_PressButton(GetParent(dlg), PSBTN_NEXT);
@@ -995,9 +1062,10 @@ _find_bang(void)
 }
 
 bool
-encui_enter(encui_page *pages, int count)
+shiz_enter(const shiz_wizard *wizard)
 {
-    int i;
+    int         i, length;
+    const char *line_end;
 
     _nclm.cbSize = sizeof(_nclm);
     if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(_nclm), &_nclm,
@@ -1007,28 +1075,32 @@ encui_enter(encui_page *pages, int count)
         return false;
     }
 
-    _psps = (PROPSHEETPAGEW *)malloc(sizeof(PROPSHEETPAGEW) * count);
+    _psps = (PROPSHEETPAGEW *)malloc(sizeof(PROPSHEETPAGEW) * wizard->npages);
     if (NULL == _psps)
     {
         return false;
     }
 
-    _hpsps = (HPROPSHEETPAGE *)malloc(sizeof(PROPSHEETPAGEW) * count);
+    _hpsps = (HPROPSHEETPAGE *)malloc(sizeof(PROPSHEETPAGEW) * wizard->npages);
     if (NULL == _hpsps)
     {
         free(_psps);
         return false;
     }
 
-    if (0 == _brand[0])
+    line_end = strchr(wizard->brand_text, '\n');
+    length =
+        MultiByteToWideChar(CP_UTF8, 0, wizard->brand_text,
+                            line_end ? (line_end - wizard->brand_text) : -1,
+                            _brand, lengthof(_brand) - 1);
+    if (line_end)
     {
-        MultiByteToWideChar(CP_UTF8, 0, pal_get_version_string(), -1, _brand,
-                            lengthof(_brand));
+        _brand[(length <= 0) ? 0 : length] = L'\0';
     }
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < wizard->npages; i++)
     {
-        if (0 == pages[i].title)
+        if (0 == wizard->pages[i].title)
         {
             _psps[i].dwSize = sizeof(PROPSHEETPAGEW);
             _psps[i].hInstance = GetModuleHandleW(NULL);
@@ -1046,7 +1118,7 @@ encui_enter(encui_page *pages, int count)
         _psps[i].hInstance = GetModuleHandleW(NULL);
         _psps[i].dwFlags = PSP_USEHEADERTITLE | PSP_USETITLE;
         _psps[i].lParam = (LPARAM)i;
-        _psps[i].pszHeaderTitle = MAKEINTRESOURCEW(pages[i].title);
+        _psps[i].pszHeaderTitle = MAKEINTRESOURCEW(wizard->pages[i].title);
         _psps[i].pszTemplate = MAKEINTRESOURCEW(IDD_PROMPT);
         _psps[i].pszTitle = _brand;
         _psps[i].pfnDlgProc = _dialog_proc;
@@ -1055,7 +1127,7 @@ encui_enter(encui_page *pages, int count)
 
     _psh.hInstance = GetModuleHandleW(NULL);
     _psh.phpage = _hpsps;
-    _psh.hwndParent = windows_get_hwnd();
+    _psh.hwndParent = (HWND)wizard->owner;
     _psh.dwFlags = windows_is_at_least_vista()
                        ? PSH_WIZARD | PSH_AEROWIZARD | PSH_USEICONID
                        : PSH_WIZARD97 | PSH_HEADER;
@@ -1063,9 +1135,9 @@ encui_enter(encui_page *pages, int count)
     _psh.pszIcon = MAKEINTRESOURCEW(1);
     _psh.pszbmHeader = MAKEINTRESOURCEW(IDB_HEADER);
     _psh.nStartPage = 0;
-    _psh.nPages = count;
+    _psh.nPages = wizard->npages;
 
-    _pages = pages;
+    _pages = wizard->pages;
     _id = -1;
 
     _bang = _find_bang();
@@ -1073,7 +1145,7 @@ encui_enter(encui_page *pages, int count)
 }
 
 bool
-encui_exit(void)
+shiz_exit(void)
 {
     if (NULL != _psps)
     {
@@ -1104,13 +1176,13 @@ encui_exit(void)
 }
 
 int
-encui_get_page(void)
+shiz_get_page(void)
 {
     return _id;
 }
 
 bool
-encui_set_page(int id)
+shiz_set_page(int id)
 {
     if (0 == _pages[id].title)
     {
@@ -1125,16 +1197,15 @@ encui_set_page(int id)
         return true;
     }
 
-    _value = ENCUI_INCOMPLETE;
+    _value = SHIZ_INCOMPLETE;
     _psh.nStartPage = _id = id;
     PropertySheetW(&_psh);
 
-    pal_disable_mouse();
     return true;
 }
 
 int
-encui_handle(void)
+shiz_handle(void)
 {
     int value = _value;
     _value = 0;
@@ -1143,9 +1214,9 @@ encui_handle(void)
 }
 
 int
-encui_check_page(const encui_page *page, void *param)
+shiz_check_page(const shiz_page *page, void *param)
 {
-    int status = page->proc(ENCUIM_CHECK, param, page->data);
+    int status = page->proc(SHIZM_CHECK, param, page->data);
     _set_buttons(_active_dlg, _id, 0 >= status);
     return status;
 }
