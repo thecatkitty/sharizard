@@ -1,0 +1,123 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    tags: [0.*]
+
+jobs:
+  Build:
+    name: Build for ${{ matrix.platform.name }}
+
+    runs-on: ${{ matrix.platform.host }}
+    strategy:
+      matrix:
+        platform:
+          - name: DOS (IA16)
+            target: dos-ia16
+            apts: gcc-ia16-elf libi86-ia16-elf
+            prepare-script: .github/prepare-dos.sh
+            fetch-script: .github/fetch-dos.sh i8088
+            flags: -DCMAKE_TOOLCHAIN_FILE=ext/nicetia16-i8088/cmake/DOS-GCC-IA16.cmake
+            host: ubuntu-latest
+
+          - name: Linux (GCC)
+            target: linux-gcc
+            host: ubuntu-latest
+
+          - name: Linux (LLVM)
+            target: linux-llvm
+            apts: clang
+            cc: clang
+            cxx: clang++
+            host: ubuntu-latest
+
+          - name: Windows (IA32)
+            target: windows-ia32
+            fetch-script: .github/fetch-mingw.sh ia32
+            cc: i686-w64-mingw32-gcc
+            cxx: i686-w64-mingw32-g++
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_EXE_LINKER_FLAGS=-L$GITHUB_WORKSPACE/ext/bulwa/i686-w64-mingw32/lib
+            host: ubuntu-latest
+
+          - name: Windows (x64)
+            target: windows-x64
+            fetch-script: .github/fetch-mingw.sh
+            cc: x86_64-w64-mingw32-gcc
+            cxx: x86_64-w64-mingw32-g++
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0502
+            host: ubuntu-latest
+
+          - name: Windows (ARM)
+            target: windows-arm
+            fetch-script: .github/fetch-mingw.sh
+            cc: armv7-w64-mingw32-gcc
+            cxx: armv7-w64-mingw32-g++
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0602
+            host: ubuntu-latest
+
+          - name: Windows (ARM64)
+            target: windows-arm64
+            fetch-script: .github/fetch-mingw.sh
+            cc: aarch64-w64-mingw32-gcc
+            cxx: aarch64-w64-mingw32-g++
+            flags: -DCMAKE_SYSTEM_NAME=Windows -DWINVER=0x0A00
+            host: ubuntu-latest
+
+          - name: Windows (IA64)
+            target: windows-ia64
+            fetch-script: .\.github\fetch-winsdk.ps1
+            env-script: . .\.github\enter-winsdk.ps1
+            flags: -G "NMake Makefiles" -DWINVER=0x0501 -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_DEBUG="/Zi /Ob0 /Od" -DCMAKE_CXX_COMPILER_FORCED=TRUE "-DCMAKE_RC_COMPILER=C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/rc.exe"
+            host: windows-2025
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+  
+      - name: Prepare Ubuntu host
+        if: startsWith(matrix.platform.host, 'ubuntu')
+        run: |
+          mkdir -p ext
+          ${{ matrix.platform.prepare-script }}
+          sudo apt update
+          sudo apt install ${{ matrix.platform.apts }} -y
+  
+      - name: Prepare Windows host
+        if: startsWith(matrix.platform.host, 'windows')
+        run: |
+          mkdir -Force ext
+          ${{ matrix.platform.prepare-script }}
+
+      - name: Fetch dependencies
+        run: |
+          ${{ matrix.platform.fetch-script }}
+          git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
+
+      - name: Build with CMake
+        env:
+          CC: ${{ matrix.platform.cc }}
+          CXX: ${{ matrix.platform.cxx }}
+        run: |
+          ${{matrix.platform.env-script}}
+          cmake -S . -B build -DCMAKE_INSTALL_PREFIX=bin/${{ matrix.platform.target }} ${{ matrix.platform.flags }}
+          cmake --build build --config Release
+          cmake --install build --config Release
+
+      - name: Prepare release info
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          git tag -l --format='%(contents:subject)' ${{ github.ref_name }} | sed -r "s/^.+: //" > bin/RELEASE.md
+  
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sharizard-${{ matrix.platform.target }}
+          path: |
+            bin
+          include-hidden-files: true
