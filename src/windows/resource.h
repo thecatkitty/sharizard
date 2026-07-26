@@ -1,17 +1,17 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
-#define SHIZ_WINRES(x) (0x7a53 + (x)) // little-endian 'Sz'
+#define SHIZ_WINRES_BASE 0x7a53 // little-endian 'Sz'
 
-#define IDD_PROMPT SHIZ_WINRES(1)
-#define IDD_VACAT  SHIZ_WINRES(2)
+#define IDD_PROMPT 0x7a53
+#define IDD_VACAT  0x7a54
 
-#define IDC_ALERT   SHIZ_WINRES(1)
-#define IDC_BANG    SHIZ_WINRES(2)
-#define IDC_EDITBOX SHIZ_WINRES(3)
-#define IDC_CHECK   SHIZ_WINRES(4)
-#define IDC_TEXT    SHIZ_WINRES(5)
+#define IDC_ALERT   0x7a53
+#define IDC_BANG    0x7a54
+#define IDC_EDITBOX 0x7a55
+#define IDC_CHECK   0x7a56
+#define IDC_TEXT    0x7a57
 
-#define IDB_HEADER SHIZ_WINRES(1)
+#define IDB_HEADER 0x7a53
 
 #endif // RESOURCE_H
