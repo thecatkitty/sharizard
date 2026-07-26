@@ -259,7 +259,6 @@ shiz_canvas_key(uint16_t scancode)
     int id = shiz_get_page();
     if ((SHIZK_PAGEUP == scancode) && (0 < id))
     {
-        pal_disable_mouse();
         shiz_set_page(id - 1);
         return SHIZ_INCOMPLETE;
     }

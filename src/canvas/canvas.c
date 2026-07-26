@@ -43,13 +43,6 @@ shiz_exit(void)
     return true;
 }
 
-static void
-_reset(void)
-{
-    pal_disable_mouse();
-    _state = STATE_NONE;
-}
-
 int
 shiz_handle(void)
 {
@@ -72,7 +65,7 @@ shiz_handle(void)
                                 page->data);
         if ((0 == status) || (-ENOSYS == status))
         {
-            _reset();
+            _state = STATE_NONE;
             return textbox ? textbox->length : 1;
         }
 
@@ -80,7 +73,6 @@ shiz_handle(void)
         {
             // Navigation interrupted
             _state = STATE_PROMPT;
-            pal_enable_mouse();
             return SHIZ_INCOMPLETE;
         }
 
@@ -103,7 +95,6 @@ shiz_handle(void)
         shiz_canvas_set_error(message);
 
         _state = STATE_PROMPT;
-        pal_enable_mouse();
         return SHIZ_INCOMPLETE;
     }
 
@@ -130,7 +121,7 @@ shiz_handle(void)
     }
     else if (SHIZ_CANCEL == status)
     {
-        _reset();
+        _state = STATE_NONE;
         return 0;
     }
 

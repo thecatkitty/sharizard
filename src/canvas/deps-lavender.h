@@ -13,7 +13,4 @@
 #define CONFIG_SHIZ_RADIO_MARK_CHARACTER "x"
 #endif
 
-extern void
-pal_enable_mouse(void);
-
 #endif // CANVAS_DEPS_LAVENDER_H

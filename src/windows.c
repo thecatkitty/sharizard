@@ -1128,7 +1128,6 @@ shiz_set_page(int id)
     _psh.nStartPage = _id = id;
     PropertySheetW(&_psh);
 
-    pal_disable_mouse();
     return true;
 }
 

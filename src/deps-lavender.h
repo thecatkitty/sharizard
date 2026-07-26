@@ -5,9 +5,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-extern void
-pal_disable_mouse(void);
-
 extern const char *
 pal_get_version_string(void);
 
