@@ -6,9 +6,6 @@
 
 #include <sharizard/base.h>
 
-extern HWND
-windows_get_hwnd(void);
-
 extern HBITMAP
 windows_create_dib(HDC dc, shiz_bitmap *bm);
 

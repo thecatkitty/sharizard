@@ -78,6 +78,7 @@ typedef struct
     shiz_page  *pages;      //!< Wizard pages.
     unsigned    npages;     //!< Number of pages.
     const char *brand_text; //!< Branding text; lines are separated by LF.
+    uintptr_t   owner;      //!< Backend-specific owner handle.
 } shiz_wizard;
 
 extern bool

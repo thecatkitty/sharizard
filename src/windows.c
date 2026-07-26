@@ -627,7 +627,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 cl_width, cl_height;
 
             // Get window and dialog client and non-client rects
-            GetWindowRect(windows_get_hwnd(), &wnd_rect);
+            GetWindowRect(_psh.hwndParent, &wnd_rect);
             window_width = wnd_rect.right - wnd_rect.left;
             window_height = wnd_rect.bottom - wnd_rect.top;
 
@@ -1058,7 +1058,7 @@ shiz_enter(const shiz_wizard *wizard)
 
     _psh.hInstance = GetModuleHandleW(NULL);
     _psh.phpage = _hpsps;
-    _psh.hwndParent = windows_get_hwnd();
+    _psh.hwndParent = (HWND)wizard->owner;
     _psh.dwFlags = windows_is_at_least_vista()
                        ? PSH_WIZARD | PSH_AEROWIZARD | PSH_USEICONID
                        : PSH_WIZARD97 | PSH_HEADER;
