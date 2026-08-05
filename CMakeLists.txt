@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    project(Sharizard C RC)
-else()
-    project(Sharizard C CXX)
-endif()
+project(Sharizard C CXX)
 
 
 include(CheckIncludeFile)
@@ -22,7 +18,8 @@ supply_compat_header(stdint)
 
 
 add_library(sharizard STATIC)
-target_include_directories(sharizard PRIVATE inc)
+target_include_directories(sharizard PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>")
 
 add_subdirectory(src)
 
