@@ -21,6 +21,10 @@ add_library(sharizard STATIC)
 target_include_directories(sharizard PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>")
 
+if(NOT MSVC)
+    target_compile_options(sharizard PRIVATE -Wall -Werror)
+endif()
+
 add_subdirectory(src)
 
 install(TARGETS sharizard DESTINATION .)

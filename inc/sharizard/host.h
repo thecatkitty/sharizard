@@ -4,14 +4,6 @@
 #include <sharizard/base.h>
 #include <sharizard/sal.h>
 
-#if INT_MAX < INT32_MAX
-typedef int32_t shiz_ms;
-#elif defined(_WIN64)
-typedef int64_t shiz_ms;
-#else
-typedef long shiz_ms;
-#endif
-
 /**
  * Sharizard library-defined localized string identifier.
  */

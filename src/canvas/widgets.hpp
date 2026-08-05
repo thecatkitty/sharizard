@@ -236,13 +236,13 @@ struct textbox : widget
     alert(char *message);
 
   private:
-    uint32_t blink_start_;
-    uint32_t caret_period_;
-    uint32_t caret_counter_;
-    bool     caret_visible_;
-    int      caret_position_;
-    int      lock_;
-    int      state_;
+    shiz_ms blink_start_;
+    shiz_ms caret_period_;
+    shiz_ms caret_counter_;
+    bool    caret_visible_;
+    int     caret_position_;
+    int     lock_;
+    int     state_;
 };
 
 template <typename T> struct field_type

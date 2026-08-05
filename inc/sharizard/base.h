@@ -43,6 +43,17 @@ typedef enum
 } shiz_color;
 
 /**
+ * Duration in miliseconds.
+ */
+#if INT_MAX < INT32_MAX
+typedef int32_t shiz_ms;
+#elif defined(_WIN64)
+typedef int64_t shiz_ms;
+#else
+typedef long shiz_ms;
+#endif
+
+/**
  * Pixel format of a bitmap.
  */
 typedef enum
