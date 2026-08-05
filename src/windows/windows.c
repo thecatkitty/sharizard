@@ -12,8 +12,8 @@
 #include <string.h>
 
 #include <sharizard.h>
+#include <sharizard/winres.h>
 
-#include "resource.h"
 #include "winutils.h"
 
 #define lengthof(x) (sizeof(x) / sizeof((x)[0]))
@@ -257,7 +257,7 @@ _check_input(HWND dlg, int page_id)
         return true;
     }
 
-    edit_box = GetDlgItem(dlg, IDC_EDITBOX);
+    edit_box = GetDlgItem(dlg, SHIZ_WINRES_IDC_EDITBOX);
     if (NULL == edit_box)
     {
         return true;
@@ -390,10 +390,10 @@ _create_controls(HWND dlg, shiz_page *page)
     bool has_checkbox = false, has_textbox = false, has_options = false;
 
     my = _get_separator_height(dlg, _font);
-    SetWindowTextW(GetDlgItem(dlg, IDC_TEXT), L"");
-    SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
+    SetWindowTextW(GetDlgItem(dlg, SHIZ_WINRES_IDC_TEXT), L"");
+    SetWindowTextW(GetDlgItem(dlg, SHIZ_WINRES_IDC_ALERT), L"");
 
-    GetWindowRect(GetDlgItem(dlg, IDC_TEXT), &rect);
+    GetWindowRect(GetDlgItem(dlg, SHIZ_WINRES_IDC_TEXT), &rect);
     ScreenToClient(dlg, (POINT *)&rect.left);
     ScreenToClient(dlg, (POINT *)&rect.right);
     cx = rect.left;
@@ -467,21 +467,21 @@ _create_controls(HWND dlg, shiz_page *page)
 
             has_textbox = true;
 
-            box = GetDlgItem(dlg, IDC_EDITBOX);
+            box = GetDlgItem(dlg, SHIZ_WINRES_IDC_EDITBOX);
             GetWindowRect(box, &box_rect);
             MoveWindow(
                 box, cx, cy,
                 min(box_rect.right - box_rect.left, rect.right - rect.left),
                 box_rect.bottom - box_rect.top, TRUE);
 
-            ctl = GetDlgItem(dlg, IDC_BANG);
+            ctl = GetDlgItem(dlg, SHIZ_WINRES_IDC_BANG);
             GetWindowRect(ctl, &ctl_rect);
             MoveWindow(ctl, cx + ctl_rect.left - box_rect.left,
                        cy + ctl_rect.top - box_rect.top,
                        ctl_rect.right - ctl_rect.left,
                        ctl_rect.bottom - ctl_rect.top, TRUE);
 
-            ctl = GetDlgItem(dlg, IDC_ALERT);
+            ctl = GetDlgItem(dlg, SHIZ_WINRES_IDC_ALERT);
             GetWindowRect(ctl, &ctl_rect);
             MoveWindow(ctl, cx + ctl_rect.left - box_rect.left,
                        cy + ctl_rect.top - box_rect.top,
@@ -500,10 +500,12 @@ _create_controls(HWND dlg, shiz_page *page)
             }
 
             has_checkbox = true;
-            _set_text(GetDlgItem(dlg, IDC_CHECK), field->data, false);
+            _set_text(GetDlgItem(dlg, SHIZ_WINRES_IDC_CHECK), field->data,
+                      false);
             if (SHIZFF_CHECKED & field->flags)
             {
-                Button_SetCheck(GetDlgItem(dlg, IDC_CHECK), BST_CHECKED);
+                Button_SetCheck(GetDlgItem(dlg, SHIZ_WINRES_IDC_CHECK),
+                                BST_CHECKED);
             }
         }
 
@@ -590,17 +592,17 @@ _create_controls(HWND dlg, shiz_page *page)
         }
     }
 
-    DestroyWindow(GetDlgItem(dlg, IDC_TEXT));
+    DestroyWindow(GetDlgItem(dlg, SHIZ_WINRES_IDC_TEXT));
     if (!has_checkbox)
     {
-        DestroyWindow(GetDlgItem(dlg, IDC_CHECK));
+        DestroyWindow(GetDlgItem(dlg, SHIZ_WINRES_IDC_CHECK));
     }
 
     if (!has_textbox)
     {
-        DestroyWindow(GetDlgItem(dlg, IDC_EDITBOX));
-        DestroyWindow(GetDlgItem(dlg, IDC_BANG));
-        DestroyWindow(GetDlgItem(dlg, IDC_ALERT));
+        DestroyWindow(GetDlgItem(dlg, SHIZ_WINRES_IDC_EDITBOX));
+        DestroyWindow(GetDlgItem(dlg, SHIZ_WINRES_IDC_BANG));
+        DestroyWindow(GetDlgItem(dlg, SHIZ_WINRES_IDC_ALERT));
     }
 }
 
@@ -860,9 +862,9 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         case PSN_WIZNEXT: {
             int                status;
             shiz_textbox_data *textbox;
-            HWND               edit_box = GetDlgItem(dlg, IDC_EDITBOX);
-            size_t             length = GetWindowTextLengthW(edit_box);
-            LPWSTR             text;
+            HWND   edit_box = GetDlgItem(dlg, SHIZ_WINRES_IDC_EDITBOX);
+            size_t length = GetWindowTextLengthW(edit_box);
+            LPWSTR text;
 
             textbox = shiz_find_textbox(_pages + id);
             if (NULL != textbox)
@@ -884,7 +886,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             if (0 < status)
             {
                 WCHAR message[MAX_PATH] = L"";
-                HWND  alert = GetDlgItem(dlg, IDC_ALERT);
+                HWND  alert = GetDlgItem(dlg, SHIZ_WINRES_IDC_ALERT);
 
                 if ((INT_MAX == status) && (NULL != textbox))
                 {
@@ -914,7 +916,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 if (NULL != alert)
                 {
                     SetWindowTextW(alert, message);
-                    Static_SetIcon(GetDlgItem(dlg, IDC_BANG), _bang);
+                    Static_SetIcon(GetDlgItem(dlg, SHIZ_WINRES_IDC_BANG),
+                                   _bang);
                     MessageBeep(MB_ICONEXCLAMATION);
                     _set_buttons(dlg, id, false);
                 }
@@ -930,8 +933,8 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
                 return TRUE;
             }
 
-            SetWindowTextW(GetDlgItem(dlg, IDC_ALERT), L"");
-            Static_SetIcon(GetDlgItem(dlg, IDC_BANG), NULL);
+            SetWindowTextW(GetDlgItem(dlg, SHIZ_WINRES_IDC_ALERT), L"");
+            Static_SetIcon(GetDlgItem(dlg, SHIZ_WINRES_IDC_BANG), NULL);
 
             if (0 != _pages[id + 1].title)
             {
@@ -966,16 +969,18 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
     case WM_COMMAND: {
         int id = PropSheet_HwndToIndex(GetParent(dlg), dlg);
 
-        if ((EN_CHANGE == HIWORD(wparam)) && (IDC_EDITBOX == LOWORD(wparam)))
+        if ((EN_CHANGE == HIWORD(wparam)) &&
+            (SHIZ_WINRES_IDC_EDITBOX == LOWORD(wparam)))
         {
             _set_buttons(dlg, id, _check_input(dlg, id));
             return TRUE;
         }
 
-        if ((BN_CLICKED == HIWORD(wparam)) && (IDC_CHECK == LOWORD(wparam)))
+        if ((BN_CLICKED == HIWORD(wparam)) &&
+            (SHIZ_WINRES_IDC_CHECK == LOWORD(wparam)))
         {
             shiz_field *checkbox = shiz_find_checkbox(_pages + id);
-            int         state = Button_GetCheck(GetDlgItem(dlg, IDC_CHECK));
+            int state = Button_GetCheck(GetDlgItem(dlg, SHIZ_WINRES_IDC_CHECK));
             if (BST_CHECKED == state)
             {
                 checkbox->flags |= SHIZFF_CHECKED;
@@ -1107,7 +1112,7 @@ shiz_enter(const shiz_wizard *wizard)
             _psps[i].dwFlags = PSP_USEHEADERTITLE | PSP_USETITLE;
             _psps[i].lParam = (LPARAM)i;
             _psps[i].pszHeaderTitle = L"Vacat";
-            _psps[i].pszTemplate = MAKEINTRESOURCEW(IDD_VACAT);
+            _psps[i].pszTemplate = MAKEINTRESOURCEW(SHIZ_WINRES_IDD_VACAT);
             _psps[i].pszTitle = _brand;
             _psps[i].pfnDlgProc = NULL;
             _hpsps[i] = CreatePropertySheetPageW((LPCPROPSHEETPAGEW)&_psps[i]);
@@ -1119,7 +1124,7 @@ shiz_enter(const shiz_wizard *wizard)
         _psps[i].dwFlags = PSP_USEHEADERTITLE | PSP_USETITLE;
         _psps[i].lParam = (LPARAM)i;
         _psps[i].pszHeaderTitle = MAKEINTRESOURCEW(wizard->pages[i].title);
-        _psps[i].pszTemplate = MAKEINTRESOURCEW(IDD_PROMPT);
+        _psps[i].pszTemplate = MAKEINTRESOURCEW(SHIZ_WINRES_IDD_TEMPLATE);
         _psps[i].pszTitle = _brand;
         _psps[i].pfnDlgProc = _dialog_proc;
         _hpsps[i] = CreatePropertySheetPageW((LPCPROPSHEETPAGEW)&_psps[i]);
@@ -1133,7 +1138,7 @@ shiz_enter(const shiz_wizard *wizard)
                        : PSH_WIZARD97 | PSH_HEADER;
     _psh.pszCaption = _brand;
     _psh.pszIcon = MAKEINTRESOURCEW(1);
-    _psh.pszbmHeader = MAKEINTRESOURCEW(IDB_HEADER);
+    _psh.pszbmHeader = MAKEINTRESOURCEW(SHIZ_WINRES_IDB_HEADER);
     _psh.nStartPage = 0;
     _psh.nPages = wizard->npages;
 

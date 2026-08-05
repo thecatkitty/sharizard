@@ -6,6 +6,8 @@ math(EXPR WINVER_MINOR "${WINVER} & 0xFF")
 
 message(STATUS "Building for Windows ${WINVER_MAJOR}.${WINVER_MINOR}")
 
-target_sources(sharizard PRIVATE
-    prompt.rc
-    windows.c)
+target_sources(sharizard
+    PRIVATE
+        windows.c
+    INTERFACE
+        prompt.rc)
