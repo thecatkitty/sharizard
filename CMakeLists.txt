@@ -25,6 +25,11 @@ if(NOT MSVC)
     target_compile_options(sharizard PRIVATE -Wall -Werror)
 endif()
 
+if(NOT WIN32)
+    set_property(TARGET sharizard PROPERTY CXX_STANDARD 14)
+    target_link_libraries(sharizard -lstdc++)
+endif()
+
 add_subdirectory(src)
 
 install(TARGETS sharizard DESTINATION .)
