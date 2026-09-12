@@ -32,4 +32,6 @@ endif()
 
 add_subdirectory(src)
 
-install(TARGETS sharizard DESTINATION .)
+if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
+    install(TARGETS sharizard DESTINATION .)
+endif()
