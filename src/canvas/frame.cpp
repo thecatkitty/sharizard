@@ -10,6 +10,7 @@
 
 extern "C"
 {
+#include "../common.h"
 #include "canvas.h"
 }
 
@@ -256,7 +257,7 @@ shiz_canvas_key(uint16_t scancode)
         return SHIZ_CANCEL;
     }
 
-    shiz_textbox_data *textbox = shiz_find_textbox(_page);
+    shiz_textbox_data *textbox = shizc_find_textbox(_page);
 
     if (SHIZK_RETURN == scancode)
     {

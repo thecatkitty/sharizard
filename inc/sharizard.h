@@ -96,12 +96,6 @@ shiz_set_page(int id);
 extern int
 shiz_handle(void);
 
-extern shiz_field *
-shiz_find_checkbox(shiz_page *page);
-
-extern shiz_textbox_data *
-shiz_find_textbox(shiz_page *page);
-
 extern int
 shiz_check_page(const shiz_page *page, void *param);
 
