@@ -14,6 +14,7 @@
 #include <sharizard.h>
 #include <sharizard/winres.h>
 
+#include "../common.h"
 #include "winutils.h"
 
 #define lengthof(x) (sizeof(x) / sizeof((x)[0]))
@@ -866,7 +867,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
             size_t length = GetWindowTextLengthW(edit_box);
             LPWSTR text;
 
-            textbox = shiz_find_textbox(_pages + id);
+            textbox = shizc_find_textbox(_pages + id);
             if (NULL != textbox)
             {
                 text = (LPWSTR)malloc((length + 1) * sizeof(WCHAR));
@@ -979,7 +980,7 @@ _dialog_proc(HWND dlg, UINT message, WPARAM wparam, LPARAM lparam)
         if ((BN_CLICKED == HIWORD(wparam)) &&
             (SHIZ_WINRES_IDC_CHECK == LOWORD(wparam)))
         {
-            shiz_field *checkbox = shiz_find_checkbox(_pages + id);
+            shiz_field *checkbox = shizc_find_checkbox(_pages + id);
             int state = Button_GetCheck(GetDlgItem(dlg, SHIZ_WINRES_IDC_CHECK));
             if (BST_CHECKED == state)
             {

@@ -6,6 +6,7 @@
 #include <sharizard/host.h>
 #include <sharizard/input.h>
 
+#include "../common.h"
 #include "canvas.h"
 
 enum
@@ -47,7 +48,7 @@ int
 shiz_handle(void)
 {
     shiz_page         *page = _pages + _id;
-    shiz_textbox_data *textbox = shiz_find_textbox(_pages + _id);
+    shiz_textbox_data *textbox = shizc_find_textbox(_pages + _id);
 
     if (STATE_NONE == _state)
     {
