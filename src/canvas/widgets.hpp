@@ -218,6 +218,9 @@ struct panel : widget
 
 struct textbox : widget
 {
+    static const shiz_ms BLINK_PERIOD = 250 / 3;
+    static const shiz_ms CARET_PERIOD = 500;
+
     textbox(shiz_field &field);
 
     void
@@ -237,10 +240,7 @@ struct textbox : widget
 
   private:
     shiz_ms blink_start_;
-    shiz_ms caret_period_;
-    shiz_ms caret_counter_;
-    bool    caret_visible_;
-    int     caret_position_;
+    int     caret_;
     int     lock_;
     int     state_;
 };
