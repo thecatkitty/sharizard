@@ -245,10 +245,7 @@ struct textbox : widget
     int     state_;
 };
 
-template <typename T> struct field_type
-{
-    static const int type = SHIZFT_SEPARATOR;
-};
+template <typename T> struct field_type;
 template <> struct field_type<checkbox>
 {
     static const int type = SHIZFT_CHECKBOX;
