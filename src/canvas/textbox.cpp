@@ -73,7 +73,7 @@ textbox::draw()
                              : SHIZ_COLOR_BLACK);
     shizd_fill_rectangle(nullptr, field.first.x, field.first.y, &field.second,
                          SHIZ_COLOR_WHITE);
-    shizd_draw_text(nullptr, position_.x + 1, position_.y + 1, textbox.buffer);
+    shizd_draw_text(nullptr, pos.x + 1, pos.y + 1, textbox.buffer);
 }
 
 bool
@@ -151,11 +151,10 @@ textbox::alert(char *message)
     shiz_vec2i glyph;
     shizd_get_cell_size(nullptr, &glyph);
 
-    auto bg = shiz_vec2i{size_.x * glyph.x, 3 * glyph.y};
-    shizd_fill_rectangle(nullptr, 0, (position_.y + 3) * glyph.y, &bg,
-                         SHIZ_COLOR_WHITE);
-
     auto pos = get_absolute_position();
+    auto bg = shiz_vec2i{size_.x * glyph.x, 3 * glyph.y};
+    shizd_fill_rectangle(nullptr, 0, (pos.y + 3) * glyph.y, &bg,
+                         SHIZ_COLOR_WHITE);
     shiz_canvas_print(pos.y + 3, message);
 }
 

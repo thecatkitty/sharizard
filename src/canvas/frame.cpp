@@ -117,11 +117,12 @@ static void
 _create_controls(shiz_page *page)
 {
     panel_ = std::make_unique<canvas::panel>(*page);
+    panel_->move(0, 1);
 
     int x, y;
     _mouse_down = SHIZ_MOUSE_LBUTTON & shizi_get_mouse(nullptr, &x, &y);
 
-    int  cy = 2;
+    int  cy = 1;
     bool has_checkbox = false;
 
     for (int i = 0; i < page->length; i++)
@@ -138,7 +139,7 @@ _create_controls(shiz_page *page)
             auto &label = panel_->create<canvas::label>(*field);
             if (SHIZFF_FOOTER & field->flags)
             {
-                label.move(1, SHIZ_CANVAS_ROWS - 5);
+                label.move(1, canvas::panel::HEIGHT - 2);
                 label.draw();
             }
             else
@@ -162,7 +163,7 @@ _create_controls(shiz_page *page)
             has_checkbox = true;
 
             auto &checkbox = panel_->create<canvas::checkbox>(*field);
-            checkbox.move(1, SHIZ_CANVAS_ROWS - 5);
+            checkbox.move(1, canvas::panel::HEIGHT - 2);
             checkbox.draw();
         }
 
@@ -238,7 +239,7 @@ shiz_canvas_click(int x, int y)
         return shiz_canvas_key(SHIZK_ESCAPE);
     }
 
-    auto pos = panel_->get_absolute_position();
+    auto pos = panel_->get_position();
     panel_->click(x - pos.x, y - pos.y);
     return SHIZ_INCOMPLETE;
 }

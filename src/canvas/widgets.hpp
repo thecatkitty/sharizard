@@ -174,6 +174,8 @@ struct option : widget
 
 struct panel : widget
 {
+    static const int HEIGHT = SHIZ_CANVAS_ROWS - 4;
+
     panel(const shiz_page &page) : widget{page}, children_{}
     {
     }

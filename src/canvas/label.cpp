@@ -74,5 +74,5 @@ label::draw()
     }
 
     size_.x = SHIZ_CANVAS_COLUMNS - 2;
-    size_.y = shiz_canvas_print(position_.y, buffer) + 1;
+    size_.y = shiz_canvas_print(pos.y, buffer) + 1;
 }

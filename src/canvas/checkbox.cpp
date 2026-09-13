@@ -26,7 +26,7 @@ checkbox::draw()
     char buffer[SHIZ_CANVAS_COLUMNS * 4] = "   ";
     shiz_canvas_load_string(&field_, buffer + 3, sizeof(buffer) - 8);
     std::strcat(buffer, " [F8]");
-    shiz_canvas_print(position_.y, buffer);
+    shiz_canvas_print(get_absolute_position().y, buffer);
 
     mark(SHIZFF_CHECKED & field_.flags);
 }
