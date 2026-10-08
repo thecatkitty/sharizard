@@ -1,5 +1,14 @@
 #!/bin/sh
-curl -L https://github.com/mstorsjo/llvm-mingw/releases/download/20241001/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64.tar.xz -o ext/llvm-mingw.txz
-tar xf ext/llvm-mingw.txz -C ext/
-mv ext/llvm-mingw-20241001-msvcrt-ubuntu-20.04-x86_64 ext/llvm-mingw
-echo "$PWD/ext/llvm-mingw/bin" >> $GITHUB_PATH
+
+set -e
+
+LLVM_MINGW_VERSION=20261006
+
+LLVM_MINGW_CRT=msvcrt
+
+LLVM_MINGW_NAME="llvm-mingw-$LLVM_MINGW_VERSION-$LLVM_MINGW_CRT-ubuntu-22.04-x86_64"
+
+curl -L https://github.com/mstorsjo/llvm-mingw/releases/download/$LLVM_MINGW_VERSION/$LLVM_MINGW_NAME.tar.xz -o ext/$LLVM_MINGW_NAME.tar.xz
+tar xf ext/$LLVM_MINGW_NAME.tar.xz -C ext/
+mv ext/$LLVM_MINGW_NAME ext/llvm-mingw-$LLVM_MINGW_CRT
+echo "$PWD/ext/llvm-mingw-$LLVM_MINGW_CRT/bin" >> $GITHUB_PATH
